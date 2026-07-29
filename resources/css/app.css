@@ -1,5 +1,23 @@
 @import 'tailwindcss';
 
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+
+@theme {
+    --color-santih-50: #fffaf0;
+    --color-santih-100: #f8efd9;
+    --color-santih-500: #9b6433;
+    --color-santih-700: #68401f;
+    --color-santih-900: #302015;
+    --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+    body {
+        @apply bg-santih-50 text-stone-800 antialiased;
+    }
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';

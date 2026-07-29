@@ -3,10 +3,14 @@
 Backend Laravel dan fondasi panel admin untuk layanan Kalender Bali serta
 pencarian dewasa ayu.
 
-Fase 3 menyediakan mesin dasar konversi tanggal Masehi menjadi indeks siklus
-Kalender Bali 0–209. Tanggal acuan wajib dikonfigurasi melalui environment dan
-tidak disediakan secara default agar aplikasi tidak mengarang rujukan Wariga.
-Fase ini belum menghitung Wewaran, Wuku, Sasih, Penanggal, atau Pangelong.
+Fase 4 menyediakan mesin konversi tanggal Masehi menjadi indeks siklus Kalender
+Bali 0–209 beserta Wuku dan seluruh Wewaran (Eka sampai Dasa Wara). Perhitungan
+memuat jeda khusus pada Catur Wara, Asta Wara, dan Sanga Wara serta turunan urip
+untuk Eka, Dwi, dan Dasa Wara.
+
+Tanggal acuan wajib dikonfigurasi melalui environment dan tidak disediakan
+secara default agar aplikasi tidak mengarang rujukan Wariga. Sasih, Penanggal,
+dan Pangelong belum dihitung pada fase ini.
 
 ## Kebutuhan
 

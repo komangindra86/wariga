@@ -5,12 +5,16 @@ namespace Tests\Unit;
 use App\Services\Calendar\BaliCalendarService;
 use App\Support\PositiveModulo;
 use Carbon\Carbon;
+use Database\Seeders\BaliCalendarMasterSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use RuntimeException;
 use Tests\TestCase;
 
 class CalendarEngineTest extends TestCase
 {
+    use RefreshDatabase;
+
     private BaliCalendarService $service;
 
     protected function setUp(): void
@@ -24,6 +28,7 @@ class CalendarEngineTest extends TestCase
             'wariga.timezone' => 'Asia/Makassar',
         ]);
 
+        $this->seed(BaliCalendarMasterSeeder::class);
         $this->service = app(BaliCalendarService::class);
     }
 
@@ -31,12 +36,26 @@ class CalendarEngineTest extends TestCase
     {
         $result = $this->service->calculate('2024-02-29');
 
+        $this->assertSame('2024-02-29', $result->tanggalMasehi);
+        $this->assertSame(0, $result->cycleIndex);
+        $this->assertSame(1, $result->hariKeSiklus210);
+        $this->assertSame('Sinta', $result->wuku->nama);
         $this->assertSame([
-            'tanggal_masehi' => '2024-02-29',
-            'cycle_index' => 0,
-            'hari_ke_siklus_210' => 1,
-            'engine_version' => '0.1.0-test',
-        ], $result->toArray());
+            'eka_wara' => null,
+            'dwi_wara' => 'Menga',
+            'tri_wara' => 'Pasah',
+            'catur_wara' => 'Sri',
+            'panca_wara' => 'Paing',
+            'sad_wara' => 'Tungleh',
+            'sapta_wara' => 'Redite',
+            'asta_wara' => 'Sri',
+            'sanga_wara' => 'Dangu',
+            'dasa_wara' => 'Sri',
+        ], array_map(
+            fn ($element) => $element?->nama,
+            $result->wewaran,
+        ));
+        $this->assertSame('0.1.0-test', $result->engineVersion);
     }
 
     public function test_dates_before_and_after_reference_wrap_in_cycle(): void

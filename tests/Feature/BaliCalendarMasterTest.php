@@ -57,11 +57,22 @@ class BaliCalendarMasterTest extends TestCase
     {
         $this->seed(BaliCalendarMasterSeeder::class);
 
-        $this->assertDatabaseCount('master_sapta_wara', 7);
-        $this->assertDatabaseCount('master_panca_wara', 5);
-        $this->assertDatabaseCount('master_wuku', 30);
+        $expectedCounts = [
+            'master_eka_wara' => 1,
+            'master_dwi_wara' => 2,
+            'master_tri_wara' => 3,
+            'master_catur_wara' => 4,
+            'master_panca_wara' => 5,
+            'master_sad_wara' => 6,
+            'master_sapta_wara' => 7,
+            'master_asta_wara' => 8,
+            'master_sanga_wara' => 9,
+            'master_dasa_wara' => 10,
+            'master_wuku' => 30,
+        ];
 
-        foreach (['master_sapta_wara', 'master_panca_wara', 'master_wuku'] as $table) {
+        foreach ($expectedCounts as $table => $count) {
+            $this->assertDatabaseCount($table, $count);
             $this->assertSame(
                 DB::table($table)->count(),
                 DB::table($table)->where('verification_status', 'draft')->count(),
@@ -73,7 +84,7 @@ class BaliCalendarMasterTest extends TestCase
     {
         $this->seed(BaliCalendarMasterSeeder::class);
 
-        foreach (['master_sapta_wara', 'master_panca_wara', 'master_wuku'] as $table) {
+        foreach (array_slice($this->tables, 0, 11) as $table) {
             $duplicateCount = DB::table($table)
                 ->select('kode')
                 ->groupBy('kode')
@@ -89,8 +100,8 @@ class BaliCalendarMasterTest extends TestCase
         $this->seed(BaliCalendarMasterSeeder::class);
         $this->seed(BaliCalendarMasterSeeder::class);
 
-        $this->assertDatabaseCount('master_sapta_wara', 7);
-        $this->assertDatabaseCount('master_panca_wara', 5);
+        $this->assertDatabaseCount('master_eka_wara', 1);
+        $this->assertDatabaseCount('master_dasa_wara', 10);
         $this->assertDatabaseCount('master_wuku', 30);
     }
 

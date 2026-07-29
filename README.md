@@ -3,10 +3,10 @@
 Backend Laravel dan fondasi panel admin untuk layanan Kalender Bali serta
 pencarian dewasa ayu.
 
-Fase 2 menyediakan 13 tabel master Kalender Bali, repository berbasis Query
-Builder, serta data awal Sapta Wara, Panca Wara, dan 30 Wuku. Seluruh data awal
-masih berstatus `draft` sampai diverifikasi menggunakan sumber Wariga yang dapat
-dipertanggungjawabkan. Fase ini belum berisi rumus perhitungan Wariga.
+Fase 3 menyediakan mesin dasar konversi tanggal Masehi menjadi indeks siklus
+Kalender Bali 0–209. Tanggal acuan wajib dikonfigurasi melalui environment dan
+tidak disediakan secara default agar aplikasi tidak mengarang rujukan Wariga.
+Fase ini belum menghitung Wewaran, Wuku, Sasih, Penanggal, atau Pangelong.
 
 ## Kebutuhan
 
@@ -19,12 +19,14 @@ dipertanggungjawabkan. Fase ini belum berisi rumus perhitungan Wariga.
 
 1. Salin `.env.example` menjadi `.env`, lalu sesuaikan koneksi MySQL.
 2. Buat database bernama `wariga_bali_santih`.
-3. Jalankan `composer install`.
-4. Jalankan `php artisan key:generate`.
-5. Jalankan `php artisan migrate`.
-6. Jalankan `php artisan db:seed`.
-7. Jalankan `npm install`.
-8. Jalankan `composer run dev`, atau jalankan `php artisan serve` dan `npm run dev`
+3. Isi `WARIGA_REFERENCE_DATE` dan `WARIGA_REFERENCE_CYCLE_INDEX` menggunakan
+   tanggal acuan yang sudah diverifikasi.
+4. Jalankan `composer install`.
+5. Jalankan `php artisan key:generate`.
+6. Jalankan `php artisan migrate`.
+7. Jalankan `php artisan db:seed`.
+8. Jalankan `npm install`.
+9. Jalankan `composer run dev`, atau jalankan `php artisan serve` dan `npm run dev`
    pada dua terminal.
 
 Jika Laragon masih memakai PHP lama, pilih PHP 8.2+ melalui menu Laragon atau

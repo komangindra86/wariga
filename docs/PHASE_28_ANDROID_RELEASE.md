@@ -6,9 +6,8 @@ Konfigurasi release Android telah disiapkan agar build tidak pernah memakai
 debug key. Build release hanya berjalan bila API produksi adalah HTTPS yang
 bukan placeholder dan `android/keystore.properties` lokal lengkap.
 
-Pada saat dokumen ini dibuat, kedua nilai produksi tersebut belum tersedia di
-workspace. Karena itu AAB produksi belum dibuat; tidak aman membuat atau
-mengirim bundle yang ditandatangani debug key.
+API produksi menggunakan `https://wariga.balisantih.com/api/v1`. Upload key
+tetap merupakan kredensial lokal dan tidak pernah disimpan di repository.
 
 ## Menyiapkan upload key
 
@@ -16,21 +15,24 @@ Simpan keystore di lokasi terenkripsi di luar repository, lalu buat salinan
 backup terenkripsi kedua. Catat alias dan password pada password manager tim;
 jangan menyimpannya di Git, tiket publik, atau file `.env` React Native.
 
-Contoh pembuatan upload key (jalankan sekali, dengan password yang kuat):
+Untuk rilis pertama, generator lokal dapat membuat upload key dan password acak
+yang kuat. Jalankan sekali dari root repository:
 
 ```powershell
-keytool -genkeypair -v -keystore C:\secure\wariga-upload-keystore.jks -alias wariga-upload -keyalg RSA -keysize 4096 -validity 10000
+powershell -ExecutionPolicy Bypass -File mobile\scripts\generate-upload-keystore.ps1
 ```
 
-Salin `mobile/android/keystore.properties.example` menjadi
-`mobile/android/keystore.properties`, lalu isi path ke keystore dan kredensial
-lokal. Berkas itu dan `*.keystore` diabaikan Git.
+Generator menolak menimpa berkas yang sudah ada. Keystore,
+`keystore.properties`, dan catatan backup sementara semuanya diabaikan Git.
+Segera pindahkan keystore beserta isi `upload-key-backup.txt` ke password manager
+atau penyimpanan terenkripsi, buat backup terenkripsi kedua, kemudian hapus
+catatan plaintext tersebut setelah backup diverifikasi.
 
 Simpan SHA-256 sertifikat upload dan cadangan terenkripsi di password manager.
 Untuk mengambil fingerprint:
 
 ```powershell
-keytool -list -v -keystore C:\secure\wariga-upload-keystore.jks -alias wariga-upload
+keytool -list -v -keystore mobile\android\upload-keystore.keystore -alias wariga-upload
 ```
 
 Aktifkan Play App Signing saat unggahan pertama. Upload key dapat diganti

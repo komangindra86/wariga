@@ -1,0 +1,95 @@
+openapi: 3.1.0
+info:
+  title: Wariga Mobile API
+  version: 1.0.0
+  description: REST API v1 untuk konsumsi aplikasi React Native.
+servers:
+  - url: /api/v1
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: Sanctum}
+  schemas:
+    Envelope:
+      type: object
+      required: [success, message, data]
+      properties:
+        success: {type: boolean}
+        message: {type: string}
+        data: {}
+    Error:
+      type: object
+      required: [success, message, errors, error_code]
+      properties:
+        success: {type: boolean, const: false}
+        message: {type: string}
+        errors: {type: object}
+        error_code: {type: string}
+    VersionMetadata:
+      type: object
+      required: [engine_version, rule_version, dataset_version]
+      properties:
+        engine_version: {type: string, example: 0.2.0}
+        rule_version: {type: string, example: 1.0.0}
+        dataset_version: {type: string, example: 1.0.0}
+paths:
+  /activities:
+    get: {summary: Daftar kegiatan aktif, responses: {'200': {description: OK}}}
+  /calendar/today:
+    get: {summary: Kalender hari ini, responses: {'200': {description: OK}}}
+  /calendar/{date}:
+    get:
+      summary: Kalender berdasarkan tanggal
+      parameters: [{name: date, in: path, required: true, schema: {type: string, format: date}}]
+      responses: {'200': {description: OK}, '422': {description: Tanggal tidak valid}}
+  /calendar/month:
+    get:
+      summary: Kalender bulanan dengan pagination
+      parameters:
+        - {name: year, in: query, schema: {type: integer}}
+        - {name: month, in: query, schema: {type: integer}}
+        - {name: page, in: query, schema: {type: integer}}
+        - {name: per_page, in: query, schema: {type: integer, maximum: 31}}
+      responses: {'200': {description: OK}}
+  /dewasa/search:
+    get:
+      summary: Cari tanggal dewasa ayu
+      parameters:
+        - {name: activity, in: query, required: true, schema: {type: string}}
+        - {name: start_date, in: query, required: true, schema: {type: string, format: date}}
+        - {name: end_date, in: query, required: true, schema: {type: string, format: date}}
+        - {name: mode, in: query, schema: {type: string, enum: [simple, complete, expert]}}
+      responses: {'200': {description: OK}, '422': {description: Validasi gagal}}
+  /dewasa/{activity}/{date}:
+    get:
+      summary: Detail dewasa ayu satu tanggal
+      parameters:
+        - {name: activity, in: path, required: true, schema: {type: string}}
+        - {name: date, in: path, required: true, schema: {type: string, format: date}}
+      responses: {'200': {description: OK}}
+  /shared/{token}:
+    get:
+      summary: Buka snapshot yang dibagikan
+      parameters: [{name: token, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: OK}, '404': {description: Tidak ditemukan}}
+  /auth/register:
+    post: {summary: Registrasi, responses: {'201': {description: Dibuat}, '422': {description: Validasi gagal}}}
+  /auth/login:
+    post: {summary: Login, responses: {'200': {description: OK}, '401': {description: Kredensial salah}}}
+  /auth/logout:
+    post: {summary: Logout token aktif, security: [{bearerAuth: []}], responses: {'200': {description: OK}}}
+  /auth/forgot-password:
+    post: {summary: Kirim tautan reset, responses: {'200': {description: OK}}}
+  /auth/reset-password:
+    post: {summary: Reset kata sandi, responses: {'200': {description: OK}, '422': {description: Token tidak valid}}}
+  /user:
+    get: {summary: Profil pengguna, security: [{bearerAuth: []}], responses: {'200': {description: OK}}}
+  /user/account:
+    delete: {summary: Hapus akun, security: [{bearerAuth: []}], responses: {'200': {description: OK}}}
+  /user/saved-dewasa:
+    get: {summary: Daftar tersimpan, security: [{bearerAuth: []}], responses: {'200': {description: OK}}}
+    post: {summary: Simpan hasil, security: [{bearerAuth: []}], responses: {'201': {description: Dibuat}}}
+  /user/saved-dewasa/{id}:
+    get: {summary: Detail tersimpan, security: [{bearerAuth: []}], responses: {'200': {description: OK}, '404': {description: Tidak ditemukan}}}
+    delete: {summary: Hapus tersimpan, security: [{bearerAuth: []}], responses: {'200': {description: OK}}}
+  /dewasa/share:
+    post: {summary: Buat tautan berbagi, security: [{bearerAuth: []}], responses: {'201': {description: Dibuat}}}

@@ -1,0 +1,2567 @@
+# MASTER PROMPT PENGEMBANGAN APLIKASI WARIGA BALI SANTIH
+
+Saya ingin membangun aplikasi bernama:
+
+# Wariga Bali Santih
+
+Wariga Bali Santih adalah aplikasi Kalender Bali dan pencarian dewasa ayu yang membantu pengguna:
+
+* melihat informasi Kalender Bali;
+* mengetahui Wewaran, Wuku, Sasih, Penanggal, dan Pangelong;
+* memilih jenis kegiatan;
+* mencari rekomendasi tanggal;
+* melihat alasan rekomendasi;
+* melihat pantangan atau hal yang perlu dipertimbangkan;
+* menyimpan hasil;
+* membagikan hasil;
+* melihat detail perhitungan melalui Mode Ahli.
+
+Aplikasi harus terasa seperti **konsultan Wariga digital**, bukan hanya kalender biasa.
+
+Pengguna tidak harus memahami seluruh istilah Wariga. Sistem harus memandu pengguna dengan alur:
+
+```text
+Pilih kegiatan
+→ Pilih rentang tanggal
+→ Sistem memeriksa setiap tanggal
+→ Sistem memberi beberapa rekomendasi
+→ Pengguna membuka detail
+→ Sistem menjelaskan alasan dan pertimbangan
+→ Pengguna dapat menyimpan atau membagikan hasil
+```
+
+---
+
+# ARSITEKTUR APLIKASI
+
+Aplikasi dibagi menjadi dua project terpisah.
+
+## 1. Backend dan Admin Panel
+
+Gunakan:
+
+* Laravel 12
+* PHP 8.2 atau lebih baru
+* MySQL
+* Laravel Query Builder
+* Tailwind CSS
+* Alpine.js jika diperlukan
+* Laravel Sanctum
+* REST API
+* PHPUnit atau Pest
+* Vite
+
+Backend bertanggung jawab untuk:
+
+* Calendar Engine;
+* konversi tanggal Masehi ke Kalender Bali;
+* perhitungan Wewaran;
+* perhitungan Wuku;
+* data Sasih, Penanggal, dan Pangelong;
+* Wariga Rule Engine;
+* pencarian dewasa ayu;
+* skor rekomendasi;
+* penjelasan hasil;
+* autentikasi;
+* data tersimpan;
+* tautan berbagi;
+* admin panel;
+* validasi data oleh ahli Wariga;
+* API untuk aplikasi mobile.
+
+## 2. Aplikasi Mobile
+
+Gunakan:
+
+* React Native CLI
+* TypeScript
+* React Navigation
+* Axios
+* TanStack Query
+* Zustand
+* React Hook Form
+* Zod
+* AsyncStorage
+* secure storage untuk token autentikasi
+* date-fns
+
+Aplikasi React Native bertanggung jawab untuk:
+
+* antarmuka pengguna;
+* komunikasi dengan REST API;
+* Kalender Bali;
+* pencarian dewasa ayu;
+* detail rekomendasi;
+* Mode Ahli;
+* menyimpan hasil;
+* membagikan hasil;
+* autentikasi;
+* pengalaman offline terbatas;
+* notifikasi pengingat;
+* build Android App Bundle.
+
+Semua rumus dan aturan Wariga harus berada di backend.
+
+React Native tidak boleh menghitung Wariga secara mandiri.
+
+---
+
+# IDENTITAS APLIKASI
+
+```text
+Nama aplikasi: Wariga Bali Santih
+Nama platform: Bali Santih
+Package Android: com.balisantih.wariga
+Bahasa utama: Indonesia
+Zona waktu: Asia/Makassar
+Target utama: Android
+Format tanggal: Indonesia
+```
+
+Package Android harus dibuat melalui konfigurasi yang jelas dan diperiksa kembali sebelum aplikasi pertama kali dipublikasikan.
+
+Setelah aplikasi dipublikasikan, package Android tidak boleh diganti.
+
+---
+
+# PRINSIP UTAMA PENGEMBANGAN
+
+1. Kerjakan aplikasi secara bertahap.
+2. Kerjakan hanya fase yang sedang diminta.
+3. Jangan langsung mengerjakan seluruh fase.
+4. Jangan melanjutkan ke fase berikutnya sebelum saya memberikan instruksi.
+5. Periksa kode yang sudah ada sebelum membuat perubahan.
+6. Jangan menghapus fitur yang sudah berjalan.
+7. Jangan membuat data Wariga tanpa sumber.
+8. Data yang belum diverifikasi harus diberi status `draft`.
+9. Data demo tidak boleh digunakan sebagai hasil publik.
+10. Semua hasil harus dapat dijelaskan.
+11. Jangan hanya menampilkan skor.
+12. Jangan menyatakan hasil sebagai kepastian mutlak.
+13. Untuk upacara penting, tampilkan anjuran berkonsultasi dengan sulinggih, pemangku, atau ahli Wariga.
+14. Gunakan Query Builder pada backend, bukan Eloquent.
+15. Pisahkan controller, service, repository, DTO, request validation, dan transformer.
+16. Jangan membuat controller terlalu panjang.
+17. Jangan menaruh seluruh logika dalam satu service.
+18. Setiap rumus harus memiliki unit test.
+19. Setiap endpoint harus memiliki validasi.
+20. Semua error untuk pengguna harus menggunakan bahasa Indonesia yang mudah dipahami.
+21. Jangan menyimpan token, password, API key, atau secret dalam source code.
+22. Gunakan environment variable.
+23. Jalankan formatter, lint, type checking, dan test pada setiap fase.
+24. Jangan menyatakan fase berhasil jika test belum dijalankan.
+25. Buat commit atau checkpoint sebelum perubahan besar.
+
+---
+
+# DAFTAR JUDUL FASE
+
+## BAGIAN A — BACKEND LARAVEL DAN ADMIN PANEL
+
+### Fase 1 — Inisialisasi Backend Laravel
+
+### Fase 2 — Database Master Kalender Bali
+
+### Fase 3 — Calendar Engine Dasar
+
+### Fase 4 — Perhitungan Wewaran dan Wuku
+
+### Fase 5 — Sasih, Penanggal, Pangelong, Purnama, dan Tilem
+
+### Fase 6 — Master Kegiatan dan Wariga Rule Engine
+
+### Fase 7 — Mesin Pencarian Dewasa Ayu
+
+### Fase 8 — REST API untuk Aplikasi Mobile
+
+### Fase 9 — Admin Panel dan Validasi Ahli Wariga
+
+### Fase 10 — Autentikasi, Favorit, Simpan, dan Bagikan
+
+### Fase 11 — Audit Log, Versi Engine, dan Riwayat Perubahan
+
+### Fase 12 — Testing Backend dan Validasi Siklus 210 Hari
+
+### Fase 13 — Keamanan, Performa, dan Deployment Backend
+
+---
+
+## BAGIAN B — FRONTEND REACT NATIVE
+
+### Fase 14 — Inisialisasi React Native
+
+### Fase 15 — Design System dan Navigasi Mobile
+
+### Fase 16 — API Client dan State Management
+
+### Fase 17 — Beranda dan Kalender Bali Hari Ini
+
+### Fase 18 — Pemilihan Kegiatan dan Rentang Waktu
+
+### Fase 19 — Hasil Pencarian Dewasa Ayu
+
+### Fase 20 — Detail Rekomendasi dan Mode Ahli
+
+### Fase 21 — Kalender Bali Bulanan
+
+### Fase 22 — Login, Register, dan Akun Pengguna
+
+### Fase 23 — Hasil Tersimpan dan Fitur Bagikan
+
+### Fase 24 — Offline Cache dan Penanganan Koneksi
+
+### Fase 25 — Pengingat dan Notifikasi
+
+### Fase 26 — Testing React Native
+
+### Fase 27 — Persiapan Google Play Store
+
+### Fase 28 — Build Release Android App Bundle
+
+---
+
+# DETAIL SETIAP FASE
+
+# BAGIAN A — BACKEND LARAVEL
+
+# FASE 1 — INISIALISASI BACKEND LARAVEL
+
+Buat fondasi backend dan admin panel aplikasi Wariga Bali Santih.
+
+## Teknologi
+
+Gunakan:
+
+* Laravel 12;
+* PHP 8.2 atau lebih baru;
+* MySQL;
+* Query Builder;
+* Tailwind CSS;
+* Vite;
+* Laravel Sanctum;
+* PHPUnit atau Pest.
+
+## Konfigurasi
+
+Atur:
+
+```text
+APP_NAME="Wariga Bali Santih"
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=id
+APP_TIMEZONE=Asia/Makassar
+```
+
+Pastikan timezone aplikasi, database, scheduler, dan proses tanggal menggunakan `Asia/Makassar`.
+
+## Struktur folder
+
+Gunakan struktur:
+
+```text
+app/
+├── DTO/
+├── Exceptions/
+├── Http/
+│   ├── Controllers/
+│   │   ├── Api/
+│   │   └── Admin/
+│   ├── Middleware/
+│   ├── Requests/
+│   └── Resources/
+├── Repositories/
+├── Services/
+│   ├── Calendar/
+│   ├── Wariga/
+│   ├── Authentication/
+│   └── Sharing/
+└── Support/
+```
+
+## Halaman dasar admin
+
+Buat:
+
+```text
+/admin/login
+/admin/dashboard
+```
+
+Untuk fase ini dashboard masih berupa placeholder.
+
+## Halaman publik web
+
+Buat halaman sederhana:
+
+```text
+/
+ /privacy-policy
+ /terms
+ /account-deletion
+```
+
+Halaman ini nantinya digunakan untuk kebutuhan Google Play Store.
+
+## Ketentuan
+
+* Jangan membuat rumus Wariga.
+* Jangan membuat data Kalender Bali.
+* Jangan mengerjakan aplikasi React Native.
+* Buat health endpoint:
+
+```text
+GET /health
+```
+
+Response tidak boleh membocorkan konfigurasi rahasia.
+
+## Hasil akhir
+
+* Laravel dapat dijalankan.
+* Koneksi database berhasil.
+* Tailwind berhasil.
+* Vite berhasil.
+* Halaman dasar dapat dibuka.
+* Test dasar berhasil.
+* Berikan daftar file yang dibuat dan diubah.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 2 — DATABASE MASTER KALENDER BALI
+
+Buat migration, seeder, repository, dan test untuk master data Kalender Bali.
+
+## Tabel master
+
+Buat:
+
+```text
+master_eka_wara
+master_dwi_wara
+master_tri_wara
+master_catur_wara
+master_panca_wara
+master_sad_wara
+master_sapta_wara
+master_asta_wara
+master_sanga_wara
+master_dasa_wara
+master_wuku
+master_sasih
+master_ingkel
+```
+
+## Struktur umum
+
+Gunakan kolom:
+
+```text
+id
+kode
+nama
+nama_indonesia nullable
+nama_alternatif nullable
+urutan
+urip nullable
+deskripsi nullable
+metadata JSON nullable
+verification_status
+is_active
+created_at
+updated_at
+```
+
+Nilai `verification_status`:
+
+```text
+draft
+review
+verified
+disputed
+archived
+```
+
+Tambahkan unique index pada `kode`.
+
+## Sapta Wara
+
+Isi:
+
+```text
+Redite — Minggu — urip 5
+Soma — Senin — urip 4
+Anggara — Selasa — urip 3
+Buda — Rabu — urip 7
+Wraspati — Kamis — urip 8
+Sukra — Jumat — urip 6
+Saniscara — Sabtu — urip 9
+```
+
+## Panca Wara
+
+Isi:
+
+```text
+Umanis — urip 5
+Paing — urip 9
+Pon — urip 7
+Wage — urip 4
+Kliwon — urip 8
+```
+
+## Wuku
+
+Isi 30 Wuku:
+
+```text
+Sinta
+Landep
+Ukir
+Kulantir
+Tolu
+Gumbreg
+Wariga
+Warigadian
+Julungwangi
+Sungsang
+Dungulan
+Kuningan
+Langkir
+Medangsia
+Pujut
+Pahang
+Krulut
+Merakih
+Tambir
+Medangkungan
+Matal
+Uye
+Menail
+Prangbakat
+Bala
+Ugu
+Wayang
+Kelawu
+Dukut
+Watugunung
+```
+
+## Seeder
+
+Gunakan Query Builder dan `updateOrInsert`.
+
+Seeder harus aman dijalankan berulang kali.
+
+Data yang sumbernya belum terverifikasi harus menggunakan:
+
+```text
+verification_status = draft
+```
+
+## Repository
+
+Buat repository Query Builder untuk mengambil:
+
+* data berdasarkan kode;
+* data berdasarkan urutan;
+* seluruh data aktif;
+* data verified saja.
+
+## Test
+
+Uji:
+
+* jumlah Sapta Wara;
+* jumlah Panca Wara;
+* jumlah Wuku;
+* kode tidak duplikat;
+* seeder aman dijalankan lebih dari sekali.
+
+## Hasil akhir
+
+* Migration berhasil.
+* Seeder berhasil.
+* Test berhasil.
+* Tidak ada data duplikat.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 3 — CALENDAR ENGINE DASAR
+
+Buat mesin dasar konversi tanggal Masehi ke indeks siklus Kalender Bali.
+
+## Konfigurasi
+
+Buat:
+
+```text
+config/wariga.php
+```
+
+Minimal berisi:
+
+```php
+return [
+    'engine_version' => env('WARIGA_ENGINE_VERSION', '0.1.0'),
+    'reference_date' => env('WARIGA_REFERENCE_DATE'),
+    'reference_cycle_index' => (int) env(
+        'WARIGA_REFERENCE_CYCLE_INDEX',
+        0
+    ),
+];
+```
+
+Jangan menanam tanggal acuan langsung di dalam service.
+
+Jika tanggal acuan belum tersedia, sistem harus menolak kalkulasi dengan pesan konfigurasi belum lengkap.
+
+Jangan mengarang tanggal acuan.
+
+## Class
+
+Buat:
+
+```text
+app/Services/Calendar/CycleCalculator.php
+app/Services/Calendar/BaliCalendarService.php
+app/DTO/BaliDateResult.php
+app/Support/PositiveModulo.php
+```
+
+## Fungsi
+
+```php
+calculateCycleIndex(Carbon $date): int
+calculate(Carbon|string $date): BaliDateResult
+positiveModulo(int $number, int $modulus): int
+```
+
+## Output dasar
+
+```json
+{
+  "tanggal_masehi": "2026-07-29",
+  "cycle_index": 0,
+  "hari_ke_siklus_210": 1,
+  "engine_version": "0.1.0"
+}
+```
+
+## Ketentuan
+
+* Indeks harus selalu 0–209.
+* Mendukung tanggal sebelum tanggal acuan.
+* Mendukung tanggal setelah tanggal acuan.
+* Mendukung tahun kabisat.
+* Menggunakan Asia/Makassar.
+* Jangan menghitung Sasih.
+* Jangan menghitung Penanggal atau Pangelong.
+
+## Test
+
+Uji:
+
+* tanggal acuan;
+* satu hari sebelum;
+* satu hari sesudah;
+* tujuh hari sesudah;
+* 210 hari sesudah;
+* tanggal sebelum acuan;
+* tahun kabisat;
+* modulo negatif;
+* siklus kembali sama setelah 210 hari.
+
+## Hasil akhir
+
+* Calendar Engine dasar berjalan.
+* Unit test berjalan.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 4 — PERHITUNGAN WEWARAN DAN WUKU
+
+Kembangkan Calendar Engine agar menghasilkan Wewaran dan Wuku.
+
+## Service
+
+Buat:
+
+```text
+WewaranCalculator.php
+WukuCalculator.php
+UripCalculator.php
+CalendarMasterRepository.php
+```
+
+## Hasil
+
+Calendar Engine harus menghasilkan:
+
+```text
+Eka Wara
+Dwi Wara
+Tri Wara
+Catur Wara
+Panca Wara
+Sad Wara
+Sapta Wara
+Asta Wara
+Sanga Wara
+Dasa Wara
+Wuku
+urip Sapta Wara
+urip Panca Wara
+jumlah urip
+cycle index
+engine version
+formula status
+```
+
+## Format data
+
+Setiap atribut minimal memiliki:
+
+```json
+{
+  "kode": "soma",
+  "nama": "Soma",
+  "nama_indonesia": "Senin",
+  "urutan": 2,
+  "urip": 4,
+  "verification_status": "verified"
+}
+```
+
+## Ketentuan
+
+* Jangan mengambil nama dari array permanen di service.
+* Ambil data master melalui repository.
+* Cache data master.
+* Jangan membuat satu method yang menghitung semuanya.
+* Rumus belum terverifikasi diberi status `draft`.
+* API harus menyertakan status formula.
+
+## Test
+
+Generate dan uji seluruh 210 indeks.
+
+Periksa:
+
+* Sapta Wara berulang setiap tujuh hari;
+* Panca Wara berulang setiap lima hari;
+* Wuku berubah setiap tujuh hari;
+* 30 Wuku selesai dalam 210 hari;
+* seluruh hasil tidak kosong;
+* siklus kembali sama setelah 210 hari.
+
+## Hasil akhir
+
+* Wewaran dan Wuku tersedia.
+* Test 210 hari berhasil.
+* Buat file CSV simulasi 210 hari.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 5 — SASIH, PENANGGAL, PANGELONG, PURNAMA, DAN TILEM
+
+Tambahkan data kalender lunar Bali.
+
+Perhitungan lunar tidak boleh dibuat dari perkiraan sederhana.
+
+Gunakan provider pattern.
+
+## Interface
+
+```php
+interface LunarCalendarProviderInterface
+{
+    public function getForDate(Carbon $date): LunarDateResult;
+}
+```
+
+## Implementasi
+
+```text
+VerifiedDatasetLunarProvider
+FormulaLunarProvider
+```
+
+Gunakan `VerifiedDatasetLunarProvider` sebagai default.
+
+`FormulaLunarProvider` tidak boleh digunakan untuk publik sebelum rumusnya terverifikasi.
+
+## Tabel
+
+Buat:
+
+```text
+calendar_lunar_dates
+```
+
+Kolom:
+
+```text
+id
+tanggal_masehi
+sasih_id
+fase
+nomor_hari
+is_purnama
+is_tilem
+is_nampih_sasih
+sumber
+referensi
+catatan
+verification_status
+verified_by nullable
+verified_at nullable
+is_active
+created_at
+updated_at
+```
+
+Nilai fase:
+
+```text
+penanggal
+pangelong
+```
+
+## Import data
+
+Sediakan import CSV dengan:
+
+* validasi header;
+* validasi tanggal;
+* preview;
+* laporan baris gagal;
+* transaksi database;
+* rollback jika terjadi kegagalan fatal;
+* deteksi data duplikat.
+
+## Ketentuan API
+
+Jika data belum tersedia, response harus jujur:
+
+```json
+{
+  "available": false,
+  "verification_status": "unavailable",
+  "message": "Data sasih dan fase bulan belum tersedia."
+}
+```
+
+Jangan membuat data pengganti.
+
+## Test
+
+Uji:
+
+* import valid;
+* import invalid;
+* data duplikat;
+* rollback;
+* data verified;
+* data draft;
+* tanggal tanpa data.
+
+## Hasil akhir
+
+* Provider lunar berjalan.
+* Import data berjalan.
+* API tidak mengarang hasil.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 6 — MASTER KEGIATAN DAN WARIGA RULE ENGINE
+
+Buat master kegiatan dan mesin aturan Wariga.
+
+## Tabel kegiatan
+
+Buat:
+
+```text
+wariga_activities
+```
+
+Kolom:
+
+```text
+id
+kode
+nama
+slug
+kategori
+deskripsi
+disclaimer
+icon nullable
+urutan
+is_active
+created_at
+updated_at
+```
+
+Contoh kegiatan:
+
+```text
+Pawiwahan
+Ngaben
+Mepandes
+Melaspas
+Membangun rumah
+Pindah rumah
+Mulai usaha
+Menanam
+Potong pohon
+Manusa Yadnya
+```
+
+Data contoh harus diberi penanda bahwa aturan aktual belum tersedia.
+
+## Tabel aturan
+
+Buat:
+
+```text
+wariga_rules
+```
+
+Kolom:
+
+```text
+id
+activity_id
+kode
+nama
+deskripsi
+rule_type
+attribute
+operator
+comparison_value JSON
+score_effect
+severity
+is_mandatory
+priority
+valid_from nullable
+valid_until nullable
+source_name nullable
+source_reference nullable
+source_page nullable
+verification_status
+created_by nullable
+verified_by nullable
+verified_at nullable
+is_active
+created_at
+updated_at
+```
+
+## Rule type
+
+```text
+positive
+negative
+prohibition
+information
+```
+
+## Operator
+
+Dukung:
+
+```text
+equals
+not_equals
+in
+not_in
+greater_than
+greater_or_equal
+less_than
+less_or_equal
+between
+contains
+exists
+not_exists
+```
+
+## Severity
+
+```text
+info
+low
+medium
+high
+critical
+```
+
+## Service
+
+Buat:
+
+```text
+RuleEvaluator.php
+WarigaEvaluationService.php
+RuleEvaluationResult.php
+WarigaEvaluationResult.php
+```
+
+## Sistem skor
+
+Gunakan skor awal yang dapat dikonfigurasi.
+
+Default:
+
+```text
+50
+```
+
+Rule positif menambah skor.
+
+Rule negatif mengurangi skor.
+
+Pantangan critical dapat mengubah status menjadi:
+
+```text
+Sebaiknya Dihindari
+```
+
+Skor akhir dibatasi 0–100.
+
+## Klasifikasi
+
+```text
+85–100: Sangat Direkomendasikan
+70–84: Direkomendasikan
+55–69: Cukup Baik
+40–54: Perlu Pertimbangan
+0–39: Sebaiknya Dihindari
+```
+
+Semua ambang harus disimpan di konfigurasi.
+
+## Ketentuan
+
+* Hanya rule `verified` yang digunakan pada hasil publik.
+* Rule draft hanya dapat diuji admin.
+* Seeder tidak boleh memasukkan aturan budaya palsu.
+* Rule demo harus diberi kode `DEMO`.
+* Rule demo tidak boleh aktif untuk publik.
+* Setiap hasil harus menyimpan alasan.
+
+## Test
+
+Uji semua operator.
+
+Uji:
+
+* rule aktif;
+* rule tidak aktif;
+* draft;
+* verified;
+* periode berlaku;
+* skor minimum;
+* skor maksimum;
+* prohibition critical;
+* banyak rule sekaligus.
+
+## Hasil akhir
+
+* Rule Engine berjalan.
+* Evaluasi menghasilkan skor dan alasan.
+* Test berhasil.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 7 — MESIN PENCARIAN DEWASA AYU
+
+Buat service untuk mencari rekomendasi tanggal dalam sebuah rentang.
+
+## Input
+
+```text
+activity
+start_date
+end_date
+limit
+mode
+status_filter
+sort
+```
+
+Mode:
+
+```text
+simple
+complete
+expert
+```
+
+## Service
+
+Buat:
+
+```text
+DewasaSearchService.php
+```
+
+Method:
+
+```php
+search(
+    int $activityId,
+    Carbon $startDate,
+    Carbon $endDate,
+    array $options = []
+): DewasaSearchResult;
+```
+
+## Proses
+
+Untuk setiap tanggal:
+
+1. Hitung Calendar Engine.
+2. Ambil data lunar jika tersedia.
+3. Bentuk objek atribut tanggal.
+4. Ambil rule verified untuk kegiatan.
+5. Evaluasi rule.
+6. Hitung skor.
+7. Tentukan status.
+8. Simpan alasan utama.
+9. Masukkan ke ranking.
+
+## Ranking
+
+Urutkan berdasarkan:
+
+1. status;
+2. skor tertinggi;
+3. jumlah rule positif;
+4. pantangan paling sedikit;
+5. tanggal terdekat.
+
+## Batasan
+
+* Rentang publik maksimal 366 hari.
+* Gunakan chunk processing.
+* Gunakan cache.
+* Cache dibedakan berdasarkan:
+
+  * kegiatan;
+  * tanggal awal;
+  * tanggal akhir;
+  * engine version;
+  * rule version;
+  * mode.
+* Cache dibersihkan jika rule verified berubah.
+
+## Output
+
+```json
+{
+  "summary": {
+    "total_dates_checked": 30,
+    "recommended_count": 8,
+    "consideration_count": 12,
+    "avoid_count": 10
+  },
+  "recommendations": []
+}
+```
+
+## Test
+
+Uji:
+
+* satu hari;
+* tujuh hari;
+* tiga puluh hari;
+* lintas bulan;
+* lintas tahun;
+* rentang melebihi batas;
+* tidak ada rule;
+* tidak ada data lunar;
+* ranking;
+* cache.
+
+## Hasil akhir
+
+* Pencarian dewasa berjalan.
+* Ranking berjalan.
+* Hasil menyertakan alasan.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 8 — REST API UNTUK APLIKASI MOBILE
+
+Buat REST API versi 1.
+
+## Endpoint publik
+
+```text
+GET /api/v1/activities
+GET /api/v1/calendar/today
+GET /api/v1/calendar/{date}
+GET /api/v1/calendar/month
+GET /api/v1/dewasa/search
+GET /api/v1/dewasa/{activity}/{date}
+GET /api/v1/shared/{token}
+```
+
+## Endpoint autentikasi
+
+```text
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+POST /api/v1/auth/forgot-password
+POST /api/v1/auth/reset-password
+GET /api/v1/user
+DELETE /api/v1/user/account
+```
+
+## Endpoint pengguna
+
+```text
+GET /api/v1/user/saved-dewasa
+POST /api/v1/user/saved-dewasa
+GET /api/v1/user/saved-dewasa/{id}
+DELETE /api/v1/user/saved-dewasa/{id}
+POST /api/v1/dewasa/share
+```
+
+## Format response
+
+Berhasil:
+
+```json
+{
+  "success": true,
+  "message": "Data berhasil diproses.",
+  "data": {}
+}
+```
+
+Gagal:
+
+```json
+{
+  "success": false,
+  "message": "Data tidak dapat diproses.",
+  "errors": {},
+  "error_code": "VALIDATION_ERROR"
+}
+```
+
+## Ketentuan
+
+* Gunakan API Resource atau transformer.
+* Jangan mengembalikan kolom internal.
+* Gunakan rate limit.
+* Gunakan pagination.
+* Gunakan kode HTTP yang benar.
+* Tambahkan `engine_version`.
+* Tambahkan `rule_version`.
+* Tambahkan status verifikasi data.
+* Buat dokumentasi OpenAPI.
+* Buat feature test.
+
+## Hasil akhir
+
+* API siap digunakan React Native.
+* Dokumentasi tersedia.
+* Test API berhasil.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 9 — ADMIN PANEL DAN VALIDASI AHLI WARIGA
+
+Buat admin panel menggunakan Laravel Blade dan Tailwind CSS.
+
+## Role
+
+```text
+super_admin
+admin_data
+validator_wariga
+viewer
+```
+
+## Dashboard
+
+Tampilkan:
+
+* jumlah kegiatan;
+* jumlah rule;
+* rule draft;
+* rule review;
+* rule verified;
+* rule disputed;
+* data lunar draft;
+* data lunar verified;
+* perubahan terbaru;
+* hasil validasi terbaru.
+
+## Modul
+
+Buat:
+
+```text
+Master Wewaran
+Master Wuku
+Master Sasih
+Data Kalender Lunar
+Master Kegiatan
+Rule Wariga
+Rule Tester
+Import Data
+Validator
+Audit Log
+Konfigurasi Engine
+```
+
+## Workflow rule
+
+```text
+Draft
+→ Review
+→ Verified
+→ Disputed
+→ Archived
+```
+
+Pembuat rule tidak boleh memverifikasi rule miliknya sendiri, kecuali super admin.
+
+## Rule tester
+
+Admin dapat:
+
+* memilih kegiatan;
+* memilih tanggal;
+* memilih rule draft atau verified;
+* menjalankan evaluasi;
+* melihat rule cocok;
+* melihat rule gagal;
+* melihat perubahan skor;
+* melihat sumber.
+
+## Ketentuan
+
+* Gunakan middleware dan authorization.
+* Gunakan Form Request.
+* Gunakan transaksi.
+* Jangan hard delete rule verified.
+* Rule verified hanya dapat diarsipkan.
+* Semua perubahan penting dicatat.
+
+## Hasil akhir
+
+* Admin panel berjalan.
+* Validator dapat memverifikasi.
+* Rule tester berjalan.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 10 — AUTENTIKASI, FAVORIT, SIMPAN, DAN BAGIKAN
+
+Gunakan Laravel Sanctum untuk autentikasi aplikasi mobile.
+
+## Tabel hasil tersimpan
+
+Buat:
+
+```text
+saved_dewasa
+```
+
+Kolom:
+
+```text
+id
+user_id
+activity_id
+tanggal
+score_snapshot
+status_snapshot
+result_snapshot JSON
+engine_version
+rule_version
+notes nullable
+created_at
+updated_at
+```
+
+## Tabel tautan publik
+
+Buat:
+
+```text
+shared_results
+```
+
+Kolom:
+
+```text
+id
+public_token
+activity_id
+tanggal
+result_snapshot JSON
+engine_version
+rule_version
+expires_at nullable
+view_count
+created_by nullable
+created_at
+```
+
+## Prinsip snapshot
+
+Hasil lama tidak boleh berubah diam-diam ketika rule diperbarui.
+
+Jika hasil terbaru berbeda, response harus menyatakan:
+
+```text
+Aturan Wariga telah diperbarui sejak hasil ini disimpan.
+```
+
+## Penghapusan akun
+
+Saat akun dihapus:
+
+* hapus token;
+* anonimisasi atau hapus data pribadi;
+* pertahankan data audit yang diwajibkan tanpa menyimpan identitas yang tidak diperlukan;
+* jangan menghapus data publik secara sembarangan;
+* buat proses aman dan dapat diuji.
+
+## Hasil akhir
+
+* Register dan login berjalan.
+* Simpan hasil berjalan.
+* Bagikan hasil berjalan.
+* Hapus akun tersedia.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 11 — AUDIT LOG, VERSI ENGINE, DAN RIWAYAT PERUBAHAN
+
+Buat audit log.
+
+## Tabel
+
+```text
+audit_logs
+```
+
+Kolom:
+
+```text
+id
+user_id nullable
+action
+entity_type
+entity_id nullable
+old_values JSON nullable
+new_values JSON nullable
+ip_address nullable
+user_agent nullable
+created_at
+```
+
+## Catat
+
+* pembuatan rule;
+* perubahan rule;
+* pengajuan review;
+* verifikasi;
+* penolakan;
+* pengarsipan;
+* import dataset;
+* perubahan tanggal acuan;
+* perubahan engine version;
+* perubahan threshold skor;
+* perubahan konfigurasi formula.
+
+## Versioning
+
+Buat:
+
+```text
+engine_version
+rule_version
+dataset_version
+```
+
+Setiap response hasil Wariga harus menyertakan versi tersebut.
+
+## Hasil akhir
+
+* Audit log berjalan.
+* Versi engine tercatat.
+* Perubahan dapat dilacak.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 12 — TESTING BACKEND DAN VALIDASI SIKLUS 210 HARI
+
+Lakukan pengujian backend secara menyeluruh.
+
+## Unit test
+
+Uji:
+
+* positive modulo;
+* Cycle Calculator;
+* Sapta Wara;
+* Panca Wara;
+* Wuku;
+* seluruh Wewaran;
+* Lunar Provider;
+* Rule Evaluator;
+* scoring;
+* ranking;
+* snapshot;
+* cache key;
+* versioning.
+
+## Feature test
+
+Uji:
+
+* endpoint kalender;
+* endpoint pencarian;
+* endpoint detail;
+* autentikasi;
+* simpan hasil;
+* bagikan hasil;
+* penghapusan akun;
+* authorization admin;
+* verifikasi rule;
+* import dataset.
+
+## Dataset 210 hari
+
+Buat:
+
+```text
+storage/app/testing/wariga-cycle-210.csv
+```
+
+Kolom:
+
+```text
+tanggal
+cycle_index
+eka_wara
+dwi_wara
+tri_wara
+catur_wara
+panca_wara
+sad_wara
+sapta_wara
+asta_wara
+sanga_wara
+dasa_wara
+wuku
+urip_sapta
+urip_panca
+jumlah_urip
+formula_status
+```
+
+## Validasi ahli
+
+Buat fitur untuk membandingkan:
+
+```text
+hasil sistem
+data referensi ahli
+status cocok
+status berbeda
+catatan validator
+```
+
+Hasil yang sudah disetujui dapat dijadikan regression fixture.
+
+## Hasil akhir
+
+* Test suite dijalankan.
+* Laporkan test berhasil dan gagal.
+* Jangan menyatakan valid jika belum dibandingkan dengan sumber ahli.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 13 — KEAMANAN, PERFORMA, DAN DEPLOYMENT BACKEND
+
+Lakukan audit produksi.
+
+## Keamanan
+
+Periksa:
+
+* SQL injection;
+* XSS;
+* CSRF;
+* authentication;
+* authorization;
+* token security;
+* mass assignment;
+* rate limiting;
+* file import;
+* MIME validation;
+* error production;
+* debug mode;
+* konfigurasi `.env`;
+* cookie;
+* session;
+* backup;
+* data pribadi.
+
+## Performa
+
+Optimalkan:
+
+* index database;
+* query master;
+* cache master;
+* cache pencarian;
+* pagination;
+* API payload;
+* eager data manual melalui Query Builder;
+* chunk processing;
+* response compression;
+* queue.
+
+## Deployment
+
+Siapkan:
+
+* `.env.example`;
+* deployment checklist;
+* migration;
+* safe seeder;
+* scheduler;
+* queue worker;
+* log rotation;
+* database backup;
+* health check;
+* rollback;
+* HTTPS.
+
+Jangan melakukan deployment tanpa instruksi.
+
+## Hasil akhir
+
+* Laporan keamanan.
+* Laporan performa.
+* Checklist deployment.
+* Berhenti setelah fase ini.
+
+---
+
+# BAGIAN B — FRONTEND REACT NATIVE
+
+# FASE 14 — INISIALISASI REACT NATIVE
+
+Buat project React Native terpisah.
+
+## Teknologi
+
+Gunakan:
+
+* React Native CLI;
+* TypeScript;
+* Android sebagai target utama.
+
+## Konfigurasi
+
+```text
+App name: Wariga Bali Santih
+Package: com.balisantih.wariga
+```
+
+Buat environment:
+
+```text
+development
+staging
+production
+```
+
+Variabel:
+
+```text
+API_BASE_URL
+API_TIMEOUT
+APP_ENV
+```
+
+## Instalasi
+
+Instal dan konfigurasi:
+
+* React Navigation;
+* Axios;
+* TanStack Query;
+* Zustand;
+* React Hook Form;
+* Zod;
+* AsyncStorage;
+* date-fns;
+* library konektivitas;
+* secure storage untuk token.
+
+## Struktur folder
+
+```text
+src/
+├── api/
+├── assets/
+├── components/
+├── config/
+├── hooks/
+├── navigation/
+├── screens/
+├── services/
+├── store/
+├── theme/
+├── types/
+├── utils/
+└── validation/
+```
+
+## Ketentuan
+
+* Aktifkan TypeScript strict.
+* Jangan gunakan `any`.
+* Konfigurasi ESLint.
+* Konfigurasi Prettier.
+* Buat alias import.
+* Jangan membuat fitur Wariga.
+* Pastikan build debug berhasil.
+
+## Hasil akhir
+
+* Project berjalan di emulator Android.
+* TypeScript berhasil.
+* Lint berhasil.
+* Build debug berhasil.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 15 — DESIGN SYSTEM DAN NAVIGASI MOBILE
+
+Buat design system Bali yang modern dan sederhana.
+
+## Karakter desain
+
+```text
+Hangat
+Bersih
+Terpercaya
+Modern
+Bernuansa Bali
+Mudah digunakan semua usia
+```
+
+Jangan memenuhi layar dengan ornamen.
+
+Gunakan ornamen hanya sebagai aksen.
+
+## Design token
+
+Buat:
+
+* color;
+* typography;
+* spacing;
+* radius;
+* shadow;
+* icon size;
+* screen size;
+* z-index.
+
+Jangan menanam kode warna langsung pada screen.
+
+## Komponen
+
+Buat:
+
+```text
+AppText
+AppButton
+AppInput
+AppCard
+AppBadge
+AppHeader
+AppDivider
+AppLoader
+AppSkeleton
+AppErrorState
+AppEmptyState
+AppAccordion
+AppBottomSheet
+ScreenContainer
+OfflineBanner
+```
+
+## Navigasi
+
+Bottom tab:
+
+```text
+Beranda
+Kalender
+Tersimpan
+Tentang
+```
+
+Stack:
+
+```text
+Home
+ActivityList
+DateRange
+SearchResult
+DewasaDetail
+CalendarDetail
+Login
+Register
+SavedDetail
+Profile
+About
+PrivacyPolicy
+Disclaimer
+```
+
+## Hasil akhir
+
+* Design system tersedia.
+* Navigasi berjalan.
+* Tampilan responsif.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 16 — API CLIENT DAN STATE MANAGEMENT
+
+Hubungkan aplikasi ke API Laravel.
+
+## Axios
+
+Buat:
+
+```text
+api/client.ts
+api/endpoints.ts
+api/interceptors.ts
+```
+
+Tangani:
+
+```text
+timeout
+offline
+401
+403
+404
+422
+429
+500
+maintenance
+```
+
+Jangan tampilkan error teknis langsung kepada pengguna.
+
+## Type
+
+Buat:
+
+```text
+ApiResponse
+ApiError
+WarigaActivity
+BaliCalendarDate
+DewasaSearchParams
+DewasaSearchSummary
+DewasaRecommendation
+DewasaDetail
+RuleEvaluation
+SavedDewasa
+SharedResult
+User
+```
+
+## TanStack Query
+
+Buat query key factory.
+
+Atur cache sesuai kebutuhan.
+
+## Zustand
+
+Gunakan untuk:
+
+* pencarian sementara;
+* activity terpilih;
+* rentang tanggal;
+* session UI;
+* filter hasil.
+
+Jangan menggunakan Zustand untuk semua response API.
+
+## Hasil akhir
+
+* API client berjalan.
+* Error handling konsisten.
+* State terstruktur.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 17 — BERANDA DAN KALENDER BALI HARI INI
+
+Buat halaman Beranda.
+
+## Isi
+
+* nama aplikasi;
+* tanggal hari ini;
+* Kalender Bali hari ini;
+* tombol Cari Dewasa Ayu;
+* tombol Lihat Kalender;
+* kegiatan populer;
+* hasil tersimpan terakhir;
+* informasi singkat Wariga;
+* disclaimer.
+
+## Card hari ini
+
+Tampilkan:
+
+```text
+Tanggal Masehi
+Sapta Wara
+Panca Wara
+Wuku
+Sasih jika tersedia
+Penanggal atau Pangelong jika tersedia
+Purnama atau Tilem jika tersedia
+Status verifikasi data
+```
+
+Jika data tidak tersedia, tampilkan pesan jujur.
+
+## UX
+
+* skeleton;
+* pull-to-refresh;
+* retry;
+* offline banner;
+* empty state;
+* tombol utama jelas.
+
+## Hasil akhir
+
+* Beranda terhubung API.
+* Data hari ini tampil.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 18 — PEMILIHAN KEGIATAN DAN RENTANG WAKTU
+
+Buat alur:
+
+```text
+Pilih kegiatan
+→ Pilih rentang waktu
+→ Cari rekomendasi
+```
+
+## Halaman kegiatan
+
+Tampilkan:
+
+* nama;
+* icon;
+* kategori;
+* deskripsi;
+* pencarian;
+* filter kategori.
+
+## Rentang waktu
+
+Pilihan cepat:
+
+```text
+7 hari ke depan
+30 hari ke depan
+Bulan ini
+Bulan depan
+Pilih rentang sendiri
+```
+
+## Validasi
+
+* tanggal awal tidak boleh setelah tanggal akhir;
+* maksimal 366 hari;
+* zona waktu Asia/Makassar;
+* tombol disabled jika invalid.
+
+## Hasil akhir
+
+* Kegiatan dapat dipilih.
+* Rentang tanggal dapat dipilih.
+* Parameter siap dikirim ke API.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 19 — HASIL PENCARIAN DEWASA AYU
+
+Hubungkan ke:
+
+```text
+GET /api/v1/dewasa/search
+```
+
+## Ringkasan
+
+Tampilkan:
+
+* kegiatan;
+* rentang tanggal;
+* tanggal diperiksa;
+* jumlah rekomendasi;
+* jumlah pertimbangan;
+* jumlah hindari.
+
+## Card tanggal
+
+Tampilkan:
+
+```text
+Tanggal Masehi
+Sapta Wara
+Panca Wara
+Wuku
+Skor
+Status
+Tiga alasan utama
+```
+
+## Filter
+
+```text
+Semua
+Rekomendasi
+Cukup baik
+Pertimbangan
+Hindari
+```
+
+## Sort
+
+```text
+Skor tertinggi
+Tanggal terdekat
+Tanggal terlama
+```
+
+## UX
+
+* skeleton;
+* retry;
+* empty state;
+* bottom sheet filter;
+* pertahankan posisi scroll;
+* jangan memuat seluruh rule pada list.
+
+## Hasil akhir
+
+* Hasil tampil.
+* Filter berjalan.
+* Sorting berjalan.
+* Detail dapat dibuka.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 20 — DETAIL REKOMENDASI DAN MODE AHLI
+
+Hubungkan ke endpoint detail.
+
+## Ringkasan
+
+Tampilkan:
+
+* kegiatan;
+* tanggal;
+* skor;
+* status;
+* alasan utama;
+* disclaimer.
+
+## Bagian
+
+```text
+Mengapa direkomendasikan
+Hal yang perlu dipertimbangkan
+Detail Kalender Bali
+Sumber dan status verifikasi
+```
+
+Gunakan accordion.
+
+## Mode Ahli
+
+Tampilkan:
+
+```text
+Kode rule
+Nama rule
+Atribut
+Operator
+Nilai pembanding
+Nilai tanggal
+Matched atau tidak
+Dampak skor
+Severity
+Sumber
+Halaman sumber
+Status verifikasi
+Engine version
+Rule version
+```
+
+## Sticky action
+
+```text
+Simpan
+Bagikan
+```
+
+## Hasil akhir
+
+* Detail lengkap.
+* Accordion berjalan.
+* Mode Ahli berjalan.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 21 — KALENDER BALI BULANAN
+
+Buat halaman kalender bulanan.
+
+Gunakan endpoint:
+
+```text
+GET /api/v1/calendar/month?year=2026&month=8
+```
+
+## Tampilan tanggal
+
+Setiap tanggal minimal menampilkan:
+
+* tanggal Masehi;
+* Panca Wara;
+* indikator rahina penting jika tersedia.
+
+## Interaksi
+
+* swipe bulan;
+* tombol hari ini;
+* tekan tanggal untuk detail;
+* cache bulan;
+* lazy loading.
+
+Jangan meminta endpoint satu per satu untuk setiap tanggal.
+
+## Hasil akhir
+
+* Kalender bulanan berjalan.
+* Detail tanggal berjalan.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 22 — LOGIN, REGISTER, DAN AKUN PENGGUNA
+
+Buat:
+
+```text
+Login
+Register
+Lupa password
+Reset password
+Profil
+Logout
+Hapus akun
+```
+
+## Prinsip guest
+
+Tanpa login, pengguna tetap dapat:
+
+* membuka aplikasi;
+* melihat kalender;
+* mencari dewasa;
+* membuka detail;
+* membagikan hasil.
+
+Login diperlukan untuk menyimpan dan sinkronisasi.
+
+## Token
+
+* simpan di secure storage;
+* jangan log token;
+* hapus token saat logout;
+* tangani token expired;
+* pulihkan session saat membuka aplikasi.
+
+## Hasil akhir
+
+* Autentikasi berjalan.
+* Guest flow tetap berjalan.
+* Hapus akun tersedia.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 23 — HASIL TERSIMPAN DAN FITUR BAGIKAN
+
+Buat halaman Tersimpan.
+
+## Card
+
+Tampilkan:
+
+* kegiatan;
+* tanggal;
+* skor snapshot;
+* status snapshot;
+* tanggal disimpan;
+* engine version;
+* catatan.
+
+Jika ada versi terbaru, tampilkan:
+
+```text
+Aturan Wariga telah diperbarui sejak hasil ini disimpan.
+```
+
+Pilihan:
+
+```text
+Lihat hasil tersimpan
+Hitung ulang
+```
+
+## Bagikan
+
+Gunakan native share sheet Android.
+
+Format:
+
+```text
+Rekomendasi Dewasa Ayu
+
+Kegiatan: [kegiatan]
+Tanggal: [tanggal]
+Kalender Bali: [Sapta Wara] [Panca Wara]
+Wuku: [Wuku]
+Status: [status]
+Skor: [skor]
+
+Lihat penjelasan:
+[tautan]
+```
+
+## Hasil akhir
+
+* Simpan berjalan.
+* Hapus simpanan berjalan.
+* Bagikan berjalan.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 24 — OFFLINE CACHE DAN PENANGANAN KONEKSI
+
+Buat dukungan offline terbatas.
+
+## Data yang dapat dibuka offline
+
+* halaman terakhir;
+* kalender yang pernah dibuka;
+* detail yang pernah dibuka;
+* data tersimpan;
+* daftar kegiatan terakhir.
+
+## Yang tidak boleh dilakukan offline
+
+* menghitung tanggal baru;
+* menjalankan pencarian baru;
+* membuat hasil seolah-olah baru.
+
+Pesan:
+
+```text
+Anda sedang offline. Data yang ditampilkan berasal dari penyimpanan terakhir di perangkat.
+```
+
+## Ketentuan
+
+* cache memiliki masa berlaku;
+* cache mengenali engine version;
+* hapus cache pribadi saat logout;
+* jangan mencampur data akun.
+
+## Hasil akhir
+
+* Offline banner berjalan.
+* Cache aman.
+* Tidak ada hasil palsu.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 25 — PENGINGAT DAN NOTIFIKASI
+
+Tambahkan local notification.
+
+## Kegunaan
+
+* pengingat hasil tersimpan;
+* satu hari sebelumnya;
+* pada hari yang sama.
+
+## Permission
+
+Jangan meminta izin saat aplikasi pertama dibuka.
+
+Minta izin ketika pengguna mengaktifkan pengingat.
+
+## Pengaturan
+
+```text
+Aktif atau nonaktif
+Waktu notifikasi
+Satu hari sebelumnya
+Pada hari yang sama
+```
+
+Jangan mengaktifkan notifikasi promosi secara default.
+
+## Hasil akhir
+
+* Local notification berjalan.
+* Permission flow berjalan.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 26 — TESTING REACT NATIVE
+
+Lakukan pengujian.
+
+## Unit test
+
+Uji:
+
+* formatter tanggal;
+* validator;
+* API error mapper;
+* query builder;
+* status mapper;
+* Zustand store;
+* auth session.
+
+## Component test
+
+Uji:
+
+* button;
+* card;
+* badge;
+* accordion;
+* skeleton;
+* error state;
+* empty state;
+* recommendation card.
+
+## Screen test
+
+Uji:
+
+* Beranda;
+* Kegiatan;
+* Rentang;
+* Hasil;
+* Detail;
+* Kalender;
+* Login;
+* Tersimpan.
+
+## Manual Android
+
+Uji:
+
+* layar kecil;
+* layar besar;
+* ukuran font besar;
+* koneksi lambat;
+* offline;
+* timeout;
+* HTTP 422;
+* HTTP 429;
+* HTTP 500;
+* token expired;
+* logout;
+* dark mode jika tersedia.
+
+## Alur utama
+
+```text
+Buka aplikasi
+→ Pilih kegiatan
+→ Pilih rentang
+→ Cari
+→ Buka hasil
+→ Buka detail
+→ Bagikan
+```
+
+## Hasil akhir
+
+* Semua test dijalankan.
+* Laporkan yang berhasil dan gagal.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 27 — PERSIAPAN GOOGLE PLAY STORE
+
+Siapkan kebutuhan publikasi.
+
+## Identitas
+
+```text
+Nama: Wariga Bali Santih
+Package: com.balisantih.wariga
+Version name: 1.0.0
+Version code: 1
+```
+
+## Aset
+
+Siapkan:
+
+* launcher icon;
+* adaptive icon;
+* notification icon;
+* splash screen;
+* icon Play Store 512 × 512;
+* feature graphic 1024 × 500;
+* screenshot ponsel;
+* screenshot tablet jika digunakan.
+
+## Dokumen
+
+Siapkan:
+
+* privacy policy;
+* terms;
+* disclaimer;
+* account deletion URL;
+* data safety information;
+* content rating information;
+* app access instructions;
+* target audience declaration;
+* ads declaration.
+
+## Permission
+
+Jangan meminta:
+
+* kontak;
+* lokasi;
+* kamera;
+* mikrofon;
+* penyimpanan;
+
+kecuali benar-benar digunakan.
+
+## Disclaimer
+
+Gunakan:
+
+```text
+Wariga Bali Santih menyediakan informasi berdasarkan data dan aturan Wariga yang tersedia dalam sistem. Hasil tidak dimaksudkan sebagai kepastian mutlak atau pengganti konsultasi dengan sulinggih, pemangku, maupun ahli Wariga.
+```
+
+## Hasil akhir
+
+* Checklist Play Store tersedia.
+* Semua dokumen tersedia.
+* Berhenti setelah fase ini.
+
+---
+
+# FASE 28 — BUILD RELEASE ANDROID APP BUNDLE
+
+Buat build production.
+
+## Konfigurasi
+
+* production API;
+* HTTPS;
+* cleartext HTTP diblokir;
+* debug log dimatikan;
+* mock API dimatikan;
+* package diperiksa;
+* version diperiksa.
+
+## Signing
+
+Siapkan:
+
+* upload keystore;
+* key alias;
+* Gradle signing configuration;
+* environment lokal untuk password.
+
+Jangan commit:
+
+```text
+keystore
+password
+gradle properties rahasia
+```
+
+Buat dokumentasi backup upload key.
+
+## Build
+
+Jalankan:
+
+```text
+clean
+lint
+type check
+test
+release build
+bundleRelease
+```
+
+Hasil akhir harus berupa:
+
+```text
+.aab
+```
+
+## Pemeriksaan
+
+Periksa:
+
+* package;
+* version code;
+* version name;
+* production API;
+* icon;
+* splash;
+* permission;
+* ukuran file;
+* crash saat startup;
+* login;
+* pencarian;
+* detail;
+* share;
+* account deletion.
+
+## Hasil akhir
+
+* Release AAB berhasil.
+* Berikan lokasi file.
+* Jangan upload ke Play Console tanpa instruksi.
+* Berhenti setelah fase ini.
+
+---
+
+# FORMAT LAPORAN WAJIB SETIAP FASE
+
+Setelah menyelesaikan satu fase, berikan laporan:
+
+```text
+1. Ringkasan pekerjaan
+2. File yang dibuat
+3. File yang diubah
+4. Migration yang dibuat
+5. Endpoint yang dibuat
+6. Test yang dijalankan
+7. Hasil test
+8. Error atau kendala
+9. Langkah pengujian manual
+10. Saran fase berikutnya
+```
+
+Jangan melanjutkan fase berikutnya.
+
+---
+
+# DEFINITION OF DONE
+
+Satu fase dianggap selesai jika:
+
+* seluruh tugas fase dikerjakan;
+* tidak ada syntax error;
+* tidak ada TypeScript error;
+* migration berhasil;
+* test terkait dijalankan;
+* error ditangani;
+* loading state tersedia jika diperlukan;
+* empty state tersedia jika diperlukan;
+* authorization berjalan;
+* tidak ada secret dalam repository;
+* tidak ada data Wariga yang dikarang;
+* fitur sebelumnya tidak rusak;
+* dokumentasi singkat tersedia;
+* laporan fase diberikan.
+
+---
+
+# INSTRUKSI PERTAMA UNTUK CODEX
+
+Sekarang kerjakan:
+
+```text
+FASE 1 — INISIALISASI BACKEND LARAVEL
+```
+
+Jangan mengerjakan fase lain.
+
+Periksa project yang sudah ada terlebih dahulu.
+
+Setelah Fase 1 selesai:
+
+* jalankan test;
+* tampilkan hasilnya;
+* laporkan seluruh file yang dibuat dan diubah;
+* berikan cara menjalankan aplikasi;
+* berhenti dan tunggu instruksi saya.

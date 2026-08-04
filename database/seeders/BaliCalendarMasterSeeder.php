@@ -71,6 +71,11 @@ class BaliCalendarMasterSeeder extends Seeder
         ]);
 
         $this->seedMaster('master_wuku', $this->wuku());
+
+        $this->seedMaster('master_sasih', $this->orderedNames([
+            'Kasa', 'Karo', 'Katiga', 'Kapat', 'Kalima', 'Kanem',
+            'Kapitu', 'Kawolu', 'Kasanga', 'Kadasa', 'Jiyestha', 'Sadha',
+        ]));
     }
 
     /**

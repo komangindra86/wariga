@@ -10,6 +10,7 @@ use App\Services\Wariga\DewasaSearchService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 final class UserFeedbackController extends Controller
@@ -52,41 +53,56 @@ final class UserFeedbackController extends Controller
             'mode' => 'expert', 'limit' => 1,
         ]);
         $recommendation = $result->toArray()['recommendations'][0];
-        $existing = DewasaUserFeedback::query()->where([
+        $attributes = [
             'user_id' => $request->user()->id,
             'activity_id' => $activity->id,
             'recommendation_date' => $date->toDateString(),
-        ])->first();
-        $submissionCount = ($existing?->submission_count ?? 0) + 1;
+        ];
+        $existing = DewasaUserFeedback::query()->where($attributes)->exists();
+        $values = [
+            'rating' => $data['rating'],
+            'reason' => $data['reason'] ?? null,
+            'region' => $data['region'] ?? null,
+            'tradition' => $data['tradition'] ?? null,
+            'consulted_expert' => (bool) ($data['consulted_expert'] ?? false),
+            'expert_role' => ($data['consulted_expert'] ?? false)
+                ? ($data['expert_role'] ?? null) : null,
+            'predicted_status' => $recommendation['status'],
+            'predicted_score' => $recommendation['score'],
+            'learning_consent' => true,
+            'consented_at' => now(),
+        ];
 
-        $feedback = DewasaUserFeedback::query()->updateOrCreate(
+        DewasaUserFeedback::query()->upsert(
             [
-                'user_id' => $request->user()->id,
-                'activity_id' => $activity->id,
-                'recommendation_date' => $date->toDateString(),
+                array_merge($attributes, $values, [
+                    'submission_count' => 1,
+                    'is_suspicious' => false,
+                ]),
             ],
+            ['user_id', 'activity_id', 'recommendation_date'],
             [
-                'rating' => $data['rating'],
-                'reason' => $data['reason'] ?? null,
-                'region' => $data['region'] ?? null,
-                'tradition' => $data['tradition'] ?? null,
-                'consulted_expert' => (bool) ($data['consulted_expert'] ?? false),
-                'expert_role' => ($data['consulted_expert'] ?? false)
-                    ? ($data['expert_role'] ?? null) : null,
-                'predicted_status' => $recommendation['status'],
-                'predicted_score' => $recommendation['score'],
-                'learning_consent' => true,
-                'submission_count' => $submissionCount,
-                'is_suspicious' => $submissionCount > 10,
-                'consented_at' => now(),
+                'rating',
+                'reason',
+                'region',
+                'tradition',
+                'consulted_expert',
+                'expert_role',
+                'predicted_status',
+                'predicted_score',
+                'learning_consent',
+                'consented_at',
+                'is_suspicious' => DB::raw('submission_count + 1 > 10'),
+                'submission_count' => DB::raw('submission_count + 1'),
             ],
         );
+        $feedback = DewasaUserFeedback::query()->where($attributes)->firstOrFail();
 
         return $this->success([
             'id' => $feedback->id,
             'rating' => $feedback->rating,
             'learning_consent' => true,
-            'updated' => ! $feedback->wasRecentlyCreated,
-        ], 'Terima kasih. Masukan Anda akan menjadi bahan tinjauan, bukan langsung mengubah aturan.', $feedback->wasRecentlyCreated ? 201 : 200);
+            'updated' => $existing,
+        ], 'Terima kasih. Masukan Anda akan menjadi bahan tinjauan, bukan langsung mengubah aturan.', $existing ? 200 : 201);
     }
 }

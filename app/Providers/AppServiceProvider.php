@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        if (Schema::hasTable('engine_settings')) {
+        if ($this->databaseIsReady() && Schema::hasTable('engine_settings')) {
             foreach (DB::table('engine_settings')->pluck('value', 'key') as $key => $value) {
                 config(["wariga.{$key}" => json_decode($value, true)]);
             }
@@ -55,5 +55,25 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(3)->by($request->ip()),
             Limit::perHour(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()),
         ]);
+    }
+
+    private function databaseIsReady(): bool
+    {
+        $connectionName = (string) config('database.default');
+        $connection = config("database.connections.{$connectionName}", []);
+
+        if (($connection['driver'] ?? null) !== 'sqlite') {
+            return true;
+        }
+
+        $database = $connection['database'] ?? null;
+
+        if (! is_string($database) || $database === '') {
+            return false;
+        }
+
+        return $database === ':memory:'
+            || str_contains($database, 'mode=memory')
+            || is_file($database);
     }
 }

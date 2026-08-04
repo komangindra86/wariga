@@ -44,6 +44,12 @@ final class ValidateWarigaCycle extends Command
 
     private function absolutePath(string $path): string
     {
-        return preg_match('/^[A-Za-z]:[\\\\\/]/', $path) === 1 ? $path : base_path($path);
+        $isWindowsAbsolute = preg_match('/^[A-Za-z]:[\\\\\/]/', $path) === 1;
+        $isUnixAbsolute = str_starts_with($path, '/');
+        $isUncPath = str_starts_with($path, '\\\\');
+
+        return $isWindowsAbsolute || $isUnixAbsolute || $isUncPath
+            ? $path
+            : base_path($path);
     }
 }

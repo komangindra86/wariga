@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\ValidateWarigaCycle;
 use App\Services\Testing\WarigaCycleFixtureService;
 use Database\Seeders\BaliCalendarMasterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use ReflectionMethod;
 use Tests\TestCase;
 
 final class PhaseTwelveBackendValidationTest extends TestCase
@@ -64,5 +66,19 @@ final class PhaseTwelveBackendValidationTest extends TestCase
             @unlink($reference);
             @unlink($report);
         }
+    }
+
+    public function test_validation_command_preserves_absolute_paths_across_platforms(): void
+    {
+        $method = new ReflectionMethod(ValidateWarigaCycle::class, 'absolutePath');
+        $command = new ValidateWarigaCycle;
+
+        $this->assertSame('/tmp/wariga-reference.csv', $method->invoke($command, '/tmp/wariga-reference.csv'));
+        $this->assertSame('C:\\data\\wariga-reference.csv', $method->invoke($command, 'C:\\data\\wariga-reference.csv'));
+        $this->assertSame('\\\\server\\share\\wariga-reference.csv', $method->invoke($command, '\\\\server\\share\\wariga-reference.csv'));
+        $this->assertSame(
+            base_path('storage/app/testing/reference.csv'),
+            $method->invoke($command, 'storage/app/testing/reference.csv'),
+        );
     }
 }

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\AlaAyuMaster;
+use App\Models\User;
 use App\Models\WarigaActivity;
+use Carbon\Carbon;
 use Database\Seeders\BaliCalendarMasterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Tests\TestCase;
 
 class ApiPhaseEightTest extends TestCase
@@ -152,14 +152,17 @@ class ApiPhaseEightTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonPath('error_code', 'VALIDATION_ERROR');
 
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/dewasa/feedback', array_merge($payload, [
+        $firstResponse = $this->actingAs($user, 'sanctum')->postJson('/api/v1/dewasa/feedback', array_merge($payload, [
             'learning_consent' => true,
         ]))->assertCreated()->assertJsonPath('data.updated', false);
+        $feedbackId = $firstResponse->json('data.id');
 
         $this->actingAs($user, 'sanctum')->postJson('/api/v1/dewasa/feedback', array_merge($payload, [
             'learning_consent' => true,
             'rating' => 'helpful',
-        ]))->assertOk()->assertJsonPath('data.updated', true);
+        ]))->assertOk()
+            ->assertJsonPath('data.id', $feedbackId)
+            ->assertJsonPath('data.updated', true);
 
         $this->assertDatabaseCount('dewasa_user_feedback', 1);
         $this->assertDatabaseHas('dewasa_user_feedback', [

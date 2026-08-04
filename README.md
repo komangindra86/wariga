@@ -145,6 +145,10 @@ php artisan test
 npm run build
 ```
 
+Untuk QA tanpa MySQL, aktifkan ekstensi pdo_sqlite lalu jalankan
+composer test:sqlite. Profil ini tidak mengubah test default yang tetap memakai
+MySQL.
+
 Endpoint pemeriksaan layanan tersedia di `GET /health`.
 
 ## Mobile sampai Fase 27

@@ -38,7 +38,7 @@ npm run android:production
 npm run typecheck
 npm run lint
 npm run format:check
-npm test -- --runInBand
+npm run test:ci
 npm run build:android:debug
 ```
 

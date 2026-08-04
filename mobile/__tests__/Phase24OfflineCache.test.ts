@@ -9,7 +9,7 @@ import {
 
 function client() {
     return new QueryClient({
-        defaultOptions: { queries: { retry: false } },
+        defaultOptions: { queries: { gcTime: Infinity, retry: false } },
     });
 }
 

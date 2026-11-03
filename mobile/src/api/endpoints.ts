@@ -15,6 +15,7 @@ import type {
     UpcomingCalendarEvent,
     WarigaActivity,
 } from '@/types/domain';
+import { sasihLabel } from '@/utils/calendar';
 
 type ApiTransportResponse<T> =
     | { data: ApiResponse<T> }
@@ -73,6 +74,7 @@ type CalendarTodayPayload = {
         nomor_hari?: number | null;
         is_purnama?: boolean;
         is_tilem?: boolean;
+        is_nampih_sasih?: boolean;
         message?: string | null;
         verification_status?: string;
     };
@@ -122,7 +124,7 @@ export function mapCalendarDate(
         saptawara_order: payload.calendar.wewaran?.sapta_wara?.urutan ?? payload.calendar.wewaran?.saptawara?.urutan ?? null,
         sadwara: payload.calendar.wewaran?.sad_wara?.nama ?? payload.calendar.wewaran?.sadwara?.nama ?? null,
         sadwara_order: payload.calendar.wewaran?.sad_wara?.urutan ?? payload.calendar.wewaran?.sadwara?.urutan ?? null,
-        sasih: lunar?.sasih?.nama ?? null,
+        sasih: sasihLabel(lunar),
         penanggal: phase === 'penanggal' ? lunar?.nomor_hari : null,
         pangelong: phase === 'pangelong' ? lunar?.nomor_hari : null,
         is_full_moon: lunar?.is_purnama ?? false,

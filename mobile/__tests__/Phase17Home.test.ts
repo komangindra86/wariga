@@ -33,6 +33,22 @@ describe('Fase 17 beranda', () => {
         });
     });
 
+    test('menandai sasih nampih dengan awalan Mala', () => {
+        expect(
+            mapCalendarDate({
+                calendar: { tanggal_masehi: '2027-05-20', wewaran: {} },
+                lunar: {
+                    available: true,
+                    fase: 'penanggal',
+                    nomor_hari: 15,
+                    is_purnama: true,
+                    is_nampih_sasih: true,
+                    sasih: { nama: 'Jiyestha' },
+                },
+            }).sasih,
+        ).toBe('Mala Jiyestha');
+    });
+
     test('jujur ketika data lunar tidak tersedia', () => {
         expect(
             mapCalendarDate({

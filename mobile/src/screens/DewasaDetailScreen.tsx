@@ -22,6 +22,7 @@ import { useAuthStore } from '@/store/authStore';
 import { colors, spacing } from '@/theme';
 import type { DewasaDetail, RecommendationReason } from '@/types/domain';
 import type { RootStackParamList } from '@/types/navigation';
+import { sasihLabel } from '@/utils/calendar';
 import { groupReasons, readableValue } from '@/utils/dewasaDetail';
 import { statusPresentation } from '@/utils/dewasaResults';
 
@@ -111,7 +112,7 @@ function DetailContent({
             const savedCalendar = saved.result.recommendations?.[0]?.calendar;
             await Share.share({
                 message: [
-                    'Rekomendasi Dewasa Ayu',
+                    'Hari Baik (Dewasa Ayu)',
                     '',
                     `Kegiatan: ${detail.activity.name}`,
                     `Tanggal: ${dateLabel(detail.date)}`,
@@ -126,12 +127,12 @@ function DetailContent({
                     }`,
                     `Wuku: ${savedCalendar?.wuku?.nama ?? 'Tidak tersedia'}`,
                     `Status: ${badge.label}`,
-                    `Skor: ${detail.score}`,
+                    `Nilai: ${detail.score}/100`,
                     '',
                     'Lihat penjelasan:',
                     link.url,
                 ].join('\n'),
-                title: 'Rekomendasi Dewasa Ayu',
+                title: 'Hari Baik (Dewasa Ayu)',
             });
         },
         onError: error => Alert.alert('Bagikan gagal', error.message),
@@ -187,7 +188,7 @@ function DetailContent({
                 <AppCard style={styles.scoreCard}>
                     <View>
                         <AppText color="textMuted" variant="caption">
-                            Skor
+                            Nilai (dari 100)
                         </AppText>
                         <AppText
                             color="primary"
@@ -205,25 +206,44 @@ function DetailContent({
                     </View>
                 </AppCard>
 
-                <AppCard style={styles.disclaimer}>
-                    <AppText variant="bodySmall">
-                        {detail.activity.disclaimer ??
-                            'Hasil Wariga adalah panduan budaya dan bukan kepastian mutlak. Untuk upacara penting, konsultasikan dengan sulinggih, pemangku, atau ahli Wariga.'}
-                    </AppText>
-                </AppCard>
-
-                <AppAccordion initiallyOpen title="Mengapa direkomendasikan">
-                    <ReasonList
-                        empty="Belum ada faktor pendukung yang cocok."
-                        reasons={grouped.recommendations}
-                    />
-                </AppAccordion>
-                <AppAccordion title="Hal yang perlu dipertimbangkan">
-                    <ReasonList
-                        empty="Tidak ada pertimbangan khusus pada tanggal ini."
-                        reasons={grouped.considerations}
-                    />
-                </AppAccordion>
+                {/* Tanggal yang kurang baik: tampilkan dulu alasan untuk menghindarinya. */}
+                {detail.status === 'recommended' ? (
+                    <>
+                        <AppAccordion
+                            initiallyOpen
+                            title="Mengapa tanggal ini baik"
+                        >
+                            <ReasonList
+                                empty="Belum ada faktor pendukung yang cocok."
+                                reasons={grouped.recommendations}
+                            />
+                        </AppAccordion>
+                        <AppAccordion title="Hal yang perlu dipertimbangkan">
+                            <ReasonList
+                                empty="Tidak ada pertimbangan khusus pada tanggal ini."
+                                reasons={grouped.considerations}
+                            />
+                        </AppAccordion>
+                    </>
+                ) : (
+                    <>
+                        <AppAccordion
+                            initiallyOpen
+                            title="Mengapa sebaiknya dipertimbangkan atau dihindari"
+                        >
+                            <ReasonList
+                                empty="Tidak ada pantangan khusus; nilainya rendah karena kurang faktor pendukung."
+                                reasons={grouped.considerations}
+                            />
+                        </AppAccordion>
+                        <AppAccordion title="Faktor pendukung">
+                            <ReasonList
+                                empty="Belum ada faktor pendukung yang cocok."
+                                reasons={grouped.recommendations}
+                            />
+                        </AppAccordion>
+                    </>
+                )}
                 <AppAccordion title="Detail Kalender Bali">
                     <DetailRow
                         label="Sapta Wara"
@@ -240,17 +260,10 @@ function DetailContent({
                         }
                     />
                     <DetailRow label="Wuku" value={calendar?.wuku?.nama} />
-                    <DetailRow
-                        label="Sasih"
-                        value={detail.lunar?.sasih?.nama}
-                    />
+                    <DetailRow label="Sasih" value={sasihLabel(detail.lunar)} />
                     <DetailRow
                         label="Fase"
-                        value={
-                            detail.lunar?.fase && detail.lunar?.nomor_hari
-                                ? `${detail.lunar.fase} ${detail.lunar.nomor_hari}`
-                                : detail.lunar?.fase
-                        }
+                        value={detailPhaseLabel(detail.lunar)}
                     />
                 </AppAccordion>
                 <AppAccordion title="Rujukan dan keandalan">
@@ -279,6 +292,10 @@ function DetailContent({
                         </AppText>
                     )}
                 </AppAccordion>
+                <AppText color="textMuted" variant="bodySmall">
+                    {detail.activity.disclaimer ??
+                        'Hasil Wariga adalah panduan budaya dan bukan kepastian mutlak. Untuk upacara penting, konsultasikan dengan sulinggih, pemangku, atau ahli Wariga.'}
+                </AppText>
                 <AppCard style={styles.feedbackCard}>
                     <AppText variant="titleSmall" weight="bold">
                         Bantu sistem belajar
@@ -410,8 +427,11 @@ function ReasonList({
                     <AppText weight="semibold">{reason.rule_name}</AppText>
                     <AppText variant="bodySmall">{reason.reason}</AppText>
                     <AppText color="textMuted" variant="caption">
-                        Dampak skor {reason.score_effect >= 0 ? '+' : ''}
-                        {reason.score_effect}
+                        {reason.score_effect >= 0
+                            ? `Menambah nilai ${reason.score_effect}`
+                            : `Mengurangi nilai ${Math.abs(
+                                  reason.score_effect,
+                              )}`}
                     </AppText>
                 </View>
             ))}
@@ -512,10 +532,6 @@ const styles = StyleSheet.create({
         padding: spacing.md,
     },
     content: { gap: spacing.md, paddingBottom: spacing.xxl },
-    disclaimer: {
-        backgroundColor: colors.secondarySoft,
-        borderColor: colors.secondarySoft,
-    },
     expertRule: {
         borderBottomColor: colors.border,
         borderBottomWidth: StyleSheet.hairlineWidth,
@@ -554,3 +570,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
 });
+
+function detailPhaseLabel(lunar: DewasaDetail['lunar']) {
+    if (lunar?.is_purnama) return 'Purnama';
+    if (lunar?.is_tilem) return 'Tilem';
+    if (!lunar?.fase) return null;
+    const fase = lunar.fase === 'pangelong' ? 'Pangelong' : 'Penanggal';
+    return lunar.nomor_hari ? `${fase} ${lunar.nomor_hari}` : fase;
+}

@@ -117,12 +117,13 @@ export function CalendarScreen({ navigation }: Props) {
                 style={styles.container}
             >
                 <View style={styles.header}>
-                    <View>
+                    <View style={styles.headerText}>
                         <AppText variant="title" weight="bold">
                             Kalender Bali
                         </AppText>
                         <AppText color="textMuted" variant="bodySmall">
-                            Geser kalender untuk berpindah bulan
+                            Geser ke kiri atau kanan untuk ganti bulan. Ketuk
+                            tanggal untuk rinciannya.
                         </AppText>
                     </View>
                     <AppButton
@@ -429,6 +430,7 @@ const styles = StyleSheet.create({
         gap: spacing.md,
         justifyContent: 'space-between',
     },
+    headerText: { flex: 1, gap: spacing.xs },
     dateNumber: { textAlign: 'center', width: '100%' },
     dateSlot: { height: 20, justifyContent: 'center', width: '100%' },
     legend: {

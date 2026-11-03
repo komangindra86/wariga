@@ -43,8 +43,8 @@ export function DateRangeScreen({ navigation, route }: Props) {
         queryKey: queryKeys.activities.all,
     });
     const activity = activities.data?.find(item => item.id === activityId);
-    const initial = presetDateRange('next_7_days', makassarToday());
-    const [preset, setPreset] = useState<DateRangePreset>('next_7_days');
+    const initial = presetDateRange('next_30_days', makassarToday());
+    const [preset, setPreset] = useState<DateRangePreset>('next_30_days');
     const [startDate, setStartDate] = useState(initial.startDate);
     const [endDate, setEndDate] = useState(initial.endDate);
     const validationError = useMemo(
@@ -62,15 +62,15 @@ export function DateRangeScreen({ navigation, route }: Props) {
         <ScreenContainer style={styles.content}>
             <View style={styles.intro}>
                 <AppText variant="title" weight="bold">
-                    Pilih rentang waktu
+                    Kapan rencananya?
                 </AppText>
                 <AppText color="textMuted">
-                    Tentukan periode untuk mencari hari yang paling sesuai.
+                    Kami akan mencari hari baik di antara tanggal-tanggal ini. Makin panjang rentangnya, makin banyak pilihan.
                 </AppText>
             </View>
             <AppCard style={styles.activity}>
                 <AppText color="textMuted" variant="caption">
-                    KEGIATAN TERPILIH
+                    Kegiatan
                 </AppText>
                 <AppText variant="titleSmall" weight="semibold">
                     {activity
@@ -89,7 +89,7 @@ export function DateRangeScreen({ navigation, route }: Props) {
             </AppCard>
             <View style={styles.rangeSection}>
                 <View style={styles.sectionHeading}>
-                    <AppText variant="titleSmall" weight="semibold">Pilih periode</AppText>
+                    <AppText variant="titleSmall" weight="semibold">Pilih waktu</AppText>
                     <AppText color="textMuted" variant="caption">Maksimal 366 hari</AppText>
                 </View>
                 <View style={styles.presets}>
@@ -154,7 +154,7 @@ export function DateRangeScreen({ navigation, route }: Props) {
             {!validationError ? (
                 <AppCard style={styles.summary}>
                     <AppText color="textMuted" variant="caption">
-                        RENTANG TERPILIH
+                        Dicari antara
                     </AppText>
                     <AppText weight="semibold">
                         {format(parseISO(startDate), 'd MMMM yyyy', {
@@ -175,7 +175,7 @@ export function DateRangeScreen({ navigation, route }: Props) {
                     isConnected === false
                 }
                 fullWidth
-                label="Cari rekomendasi"
+                label="Cari hari baik"
                 onPress={() =>
                     navigation.navigate('SearchResult', {
                         activityId,

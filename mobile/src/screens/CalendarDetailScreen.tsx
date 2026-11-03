@@ -34,7 +34,6 @@ export function CalendarDetailScreen({ navigation, route }: Props) {
         <>
             <OfflineBanner visible={query.fetchStatus === 'paused'} />
             <ScreenContainer style={styles.container}>
-                <AppText color="textMuted">Rincian Kalender Bali</AppText>
                 <AppText variant="title" weight="bold">
                     {format(parseISO(date), 'EEEE, d MMMM yyyy', {
                         locale: id,
@@ -137,8 +136,10 @@ export function CalendarDetailScreen({ navigation, route }: Props) {
                     </AppCard>
                 )}
                 <AppButton
-                    label="Coba tanggal ini untuk Dewasa Ayu"
-                    onPress={() => navigation.navigate('ActivityList')}
+                    label="Cek tanggal ini untuk sebuah kegiatan"
+                    onPress={() =>
+                        navigation.navigate('ActivityList', { date })
+                    }
                     variant="outline"
                 />
             </ScreenContainer>

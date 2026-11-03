@@ -31,10 +31,10 @@ export function statusPresentation(item: DewasaRecommendation) {
         return { label: 'Hindari', tone: 'danger' as const };
     }
     if (item.status === 'consideration') {
-        return { label: 'Pertimbangan', tone: 'warning' as const };
+        return { label: 'Pertimbangkan', tone: 'warning' as const };
     }
     if (item.classification === 'Cukup Baik') {
         return { label: 'Cukup baik', tone: 'info' as const };
     }
-    return { label: 'Rekomendasi', tone: 'success' as const };
+    return { label: 'Baik', tone: 'success' as const };
 }

@@ -76,3 +76,31 @@ export function calendarMarker(item?: BaliCalendarDate): CalendarMarker {
 export function parseCalendarDate(date: string): Date {
     return parseISO(date);
 }
+
+/** Nama sasih untuk tampilan; sasih nampih ditandai "Mala", mis. "Mala Jiyestha". */
+export function sasihLabel(
+    lunar?: {
+        sasih?: { nama?: string | null } | null;
+        is_nampih_sasih?: boolean;
+    } | null,
+): string | null {
+    const name = lunar?.sasih?.nama;
+    if (!name) return null;
+    return lunar?.is_nampih_sasih ? `Mala ${name}` : name;
+}
+
+/** Fase bulan untuk tampilan: "Purnama", "Tilem", "Penanggal 3", atau "Pangelong 6". */
+export function lunarPhaseLabel(
+    item?: {
+        is_full_moon?: boolean;
+        is_new_moon?: boolean;
+        penanggal?: number | null;
+        pangelong?: number | null;
+    } | null,
+): string | null {
+    if (item?.is_full_moon) return 'Purnama';
+    if (item?.is_new_moon) return 'Tilem';
+    if (item?.penanggal) return `Penanggal ${item.penanggal}`;
+    if (item?.pangelong) return `Pangelong ${item.pangelong}`;
+    return null;
+}

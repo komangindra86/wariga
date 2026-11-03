@@ -116,6 +116,7 @@ export interface DewasaDetail extends DewasaRecommendation {
         nomor_hari?: number | null;
         is_purnama?: boolean;
         is_tilem?: boolean;
+        is_nampih_sasih?: boolean;
         verification_status?: string;
     };
     engine_version?: string;

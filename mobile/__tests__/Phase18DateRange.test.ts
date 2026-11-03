@@ -18,6 +18,13 @@ describe('Fase 18 pemilihan rentang waktu', () => {
         });
     });
 
+    test('bulan ini dimulai hari ini, bukan tanggal yang sudah lewat', () => {
+        expect(presetDateRange('this_month', '2026-07-20')).toEqual({
+            startDate: '2026-07-20',
+            endDate: '2026-07-31',
+        });
+    });
+
     test('menghitung bulan depan lintas tahun', () => {
         expect(presetDateRange('next_month', '2026-12-20')).toEqual({
             startDate: '2027-01-01',

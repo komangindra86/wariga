@@ -5,7 +5,8 @@ import type {
     PartialState,
 } from '@react-navigation/native';
 
-const PREFIX = '@wariga/navigation/v1';
+// v2: tab Cari ditambahkan; state lama tanpa tab itu tidak dipulihkan.
+const PREFIX = '@wariga/navigation/v2';
 const TTL = 24 * 60 * 60_000;
 
 type StoredNavigation = {

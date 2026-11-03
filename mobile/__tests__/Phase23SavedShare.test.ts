@@ -53,7 +53,7 @@ const saved: SavedDewasa = {
 describe('Phase 23 saved results and sharing', () => {
     it('reads the recommendation from the immutable saved snapshot', () => {
         expect(savedRecommendation(saved)?.score).toBe(88);
-        expect(savedStatusLabel(saved)).toBe('Rekomendasi');
+        expect(savedStatusLabel(saved)).toBe('Baik');
     });
 
     it('builds the prescribed native share-sheet message', () => {
@@ -62,12 +62,12 @@ describe('Phase 23 saved results and sharing', () => {
             'https://wariga.test/api/v1/shared/token',
         );
 
-        expect(message).toContain('Rekomendasi Dewasa Ayu');
+        expect(message).toContain('Hari Baik (Dewasa Ayu)');
         expect(message).toContain('Kegiatan: Membangun Rumah');
         expect(message).toContain('Kalender Bali: Soma Umanis');
         expect(message).toContain('Wuku: Sinta');
-        expect(message).toContain('Status: Rekomendasi');
-        expect(message).toContain('Skor: 88');
+        expect(message).toContain('Status: Baik');
+        expect(message).toContain('Nilai: 88/100');
         expect(message).toContain(
             'Lihat penjelasan:\nhttps://wariga.test/api/v1/shared/token',
         );

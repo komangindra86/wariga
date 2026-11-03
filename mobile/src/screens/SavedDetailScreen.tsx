@@ -153,7 +153,7 @@ export function SavedDetailScreen({ navigation, route }: Props) {
             <AppCard style={styles.card}>
                 <View style={styles.summary}>
                     <View>
-                        <AppText color="textMuted" variant="caption">Skor snapshot</AppText>
+                        <AppText color="textMuted" variant="caption">Nilai saat disimpan (dari 100)</AppText>
                         <AppText color="primary" variant="display" weight="bold">
                             {item.score}
                         </AppText>
@@ -172,7 +172,6 @@ export function SavedDetailScreen({ navigation, route }: Props) {
                 <DetailRow label="Sapta Wara" value={recalendar?.wewaran?.saptawara?.nama} />
                 <DetailRow label="Panca Wara" value={recalendar?.wewaran?.pancawara?.nama} />
                 <DetailRow label="Wuku" value={recalendar?.wuku?.nama} />
-                <DetailRow label="Engine version" value={item.engine_version} />
                 <DetailRow label="Disimpan" value={savedDateLabel(item.created_at.slice(0, 10))} />
             </AppCard>
             {item.notes ? (

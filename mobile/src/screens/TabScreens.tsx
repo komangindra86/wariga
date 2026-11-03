@@ -72,7 +72,7 @@ export function SavedScreen({ navigation }: SavedProps) {
                 />
             ) : saved.data.length === 0 ? (
                 <AppEmptyState
-                    actionLabel="Cari dewasa ayu"
+                    actionLabel="Cari hari baik"
                     message="Rekomendasi yang Anda simpan akan tampil di sini."
                     onAction={() => navigation.navigate('ActivityList')}
                     title="Belum ada hasil tersimpan"
@@ -126,10 +126,9 @@ function SavedCard({
                     }
                 />
             </View>
-            <AppText>Skor snapshot: {item.score}</AppText>
-            <AppText color="textMuted" variant="caption">
-                Disimpan {savedDateLabel(item.created_at.slice(0, 10))} · Engine{' '}
-                {item.engine_version}
+            <AppText>Nilai saat disimpan: {item.score}/100</AppText>
+            <AppText color="textMuted" variant="bodySmall">
+                Disimpan {savedDateLabel(item.created_at.slice(0, 10))}
             </AppText>
             {item.notes ? (
                 <AppText variant="bodySmall">Catatan: {item.notes}</AppText>
@@ -160,7 +159,7 @@ export function AboutScreen({ navigation }: AboutProps) {
     return (
         <ScreenContainer style={styles.container}>
             <AppText variant="title" weight="bold">
-                Tentang
+                Lainnya
             </AppText>
             <AppCard style={styles.card}>
                 <AppText weight="semibold">Wariga Bali Santih</AppText>

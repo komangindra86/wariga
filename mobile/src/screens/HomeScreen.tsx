@@ -1,29 +1,30 @@
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { endpoints } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import {
+    AppAccordion,
     AppBadge,
     AppButton,
     AppCard,
-    AppEmptyState,
     AppErrorState,
     AppSkeleton,
     AppText,
     OfflineBanner,
     ScreenContainer,
 } from '@/components';
-import { tokenStorage } from '@/services/tokenStorage';
-import { colors, spacing } from '@/theme';
+import { useAuthStore } from '@/store/authStore';
+import { colors, radius, spacing } from '@/theme';
 import type { BaliCalendarDate, DailyRecommendations } from '@/types/domain';
 import type { MainTabParamList, RootStackParamList } from '@/types/navigation';
+import { lunarPhaseLabel } from '@/utils/calendar';
 
 type Props = CompositeScreenProps<
     BottomTabScreenProps<MainTabParamList, 'Home'>,
@@ -31,7 +32,7 @@ type Props = CompositeScreenProps<
 >;
 
 export function HomeScreen({ navigation }: Props) {
-    const [hasToken, setHasToken] = useState(false);
+    const isAuthenticated = useAuthStore(state => state.isAuthenticated);
     const calendar = useQuery({
         queryFn: endpoints.calendarToday,
         queryKey: queryKeys.calendar.today(),
@@ -45,36 +46,29 @@ export function HomeScreen({ navigation }: Props) {
         queryKey: queryKeys.dewasa.today(),
     });
     const saved = useQuery({
-        enabled: hasToken,
+        enabled: isAuthenticated,
         queryFn: endpoints.savedDewasa,
         queryKey: queryKeys.saved.all,
     });
 
-    useEffect(() => {
-        tokenStorage
-            .get()
-            .then(token => setHasToken(Boolean(token)))
-            .catch(() => setHasToken(false));
-    }, []);
-
-    const popularActivities = useMemo(
-        () =>
-            (activities.data ?? [])
-                .filter(activity => activity.is_popular)
-                .slice(0, 4),
-        [activities.data],
-    );
+    const popularActivities = useMemo(() => {
+        const all = activities.data ?? [];
+        const popular = all.filter(activity => activity.is_popular);
+        // Bila admin belum menandai kegiatan populer, tetap tampilkan pilihan cepat.
+        return (popular.length > 0 ? popular : all).slice(0, 4);
+    }, [activities.data]);
     const isRefreshing =
         calendar.isRefetching ||
         daily.isRefetching ||
         activities.isRefetching ||
-        (hasToken && saved.isRefetching);
+        (isAuthenticated && saved.isRefetching);
     const refresh = () => {
         calendar.refetch().catch(() => undefined);
         daily.refetch().catch(() => undefined);
         activities.refetch().catch(() => undefined);
-        if (hasToken) saved.refetch().catch(() => undefined);
+        if (isAuthenticated) saved.refetch().catch(() => undefined);
     };
+    const latestSaved = isAuthenticated ? saved.data?.[0] : undefined;
 
     return (
         <>
@@ -89,46 +83,74 @@ export function HomeScreen({ navigation }: Props) {
                     />
                 }
             >
-                <View style={styles.hero}>
-                    <AppBadge label="Wariga Bali" tone="warning" />
-                    <AppText
-                        color="textInverse"
-                        variant="display"
-                        weight="bold"
-                    >
-                        Wariga Bali Santih
+                <TodayHeader calendar={calendar} />
+
+                <View style={styles.searchCard}>
+                    <AppText color="textInverse" variant="title" weight="bold">
+                        Cari hari baik
                     </AppText>
                     <AppText color="secondarySoft">
-                        {format(new Date(), 'EEEE, d MMMM yyyy', {
-                            locale: id,
-                        })}
+                        Mau menikah, ngaben, membangun rumah, atau memulai
+                        usaha? Pilih kegiatannya, kami carikan tanggal yang baik
+                        beserta alasannya.
                     </AppText>
+                    <AppButton
+                        fullWidth
+                        label="Mulai cari hari baik"
+                        onPress={() => navigation.navigate('Search')}
+                        variant="secondary"
+                    />
                 </View>
 
-                <SectionTitle title="Kalender Bali hari ini" />
-                {calendar.isPending ? (
-                    <CalendarSkeleton />
-                ) : calendar.isError ? (
-                    <AppCard>
-                        <AppErrorState
-                            message={calendar.error.message}
-                            onRetry={() => {
-                                calendar.refetch().catch(() => undefined);
-                            }}
+                {popularActivities.length > 0 ? (
+                    <>
+                        <SectionTitle
+                            hint="Ketuk untuk langsung memilih tanggal."
+                            title="Sering dicari"
                         />
-                    </AppCard>
-                ) : (
-                    <TodayCard calendar={calendar.data} />
-                )}
+                        <View style={styles.activityGrid}>
+                            {popularActivities.map(activity => (
+                                <Pressable
+                                    accessibilityHint="Lanjut memilih rentang waktu"
+                                    accessibilityRole="button"
+                                    key={activity.id}
+                                    onPress={() =>
+                                        navigation.navigate('DateRange', {
+                                            activityId: activity.id,
+                                        })
+                                    }
+                                    style={({ pressed }) => [
+                                        styles.activity,
+                                        pressed && styles.pressed,
+                                    ]}
+                                >
+                                    <AppText style={styles.activityIcon}>
+                                        {activity.icon ?? '◇'}
+                                    </AppText>
+                                    <AppText
+                                        numberOfLines={2}
+                                        weight="semibold"
+                                    >
+                                        {activity.name}
+                                    </AppText>
+                                </Pressable>
+                            ))}
+                        </View>
+                    </>
+                ) : activities.isPending ? (
+                    <AppSkeleton height={92} />
+                ) : null}
 
-                <SectionTitle title="Hari ini bagus untuk apa?" />
+                <SectionTitle title="Hari ini baik untuk apa?" />
                 {daily.isPending ? (
                     <DailySkeleton />
                 ) : daily.isError ? (
                     <AppCard>
                         <AppErrorState
                             message={daily.error.message}
-                            onRetry={() => daily.refetch().catch(() => undefined)}
+                            onRetry={() =>
+                                daily.refetch().catch(() => undefined)
+                            }
                         />
                     </AppCard>
                 ) : (
@@ -143,151 +165,139 @@ export function HomeScreen({ navigation }: Props) {
                     />
                 )}
 
-                <View style={styles.actions}>
-                    <AppButton
-                        fullWidth
-                        label="Cari Dewasa Ayu"
-                        onPress={() => navigation.navigate('ActivityList')}
-                    />
-                    <AppButton
-                        fullWidth
-                        label="Lihat Kalender"
-                        onPress={() => navigation.navigate('Calendar')}
-                        variant="outline"
-                    />
-                </View>
-
-                <SectionTitle title="Kegiatan populer" />
-                {activities.isPending ? (
-                    <AppSkeleton height={92} />
-                ) : activities.isError ? (
-                    <AppErrorState
-                        message={activities.error.message}
-                        onRetry={() => {
-                            activities.refetch().catch(() => undefined);
-                        }}
-                    />
-                ) : popularActivities.length === 0 ? (
-                    <AppEmptyState
-                        actionLabel="Lihat semua kegiatan"
-                        message="Belum ada kegiatan populer yang ditandai."
-                        onAction={() => navigation.navigate('ActivityList')}
-                        title="Kegiatan belum tersedia"
-                    />
-                ) : (
-                    <View style={styles.activityGrid}>
-                        {popularActivities.map(activity => (
-                            <AppCard key={activity.id} style={styles.activity}>
-                                <AppText style={styles.activityIcon}>
-                                    {activity.icon ?? '◇'}
-                                </AppText>
-                                <AppText weight="semibold">
-                                    {activity.name}
-                                </AppText>
-                                {activity.category ? (
-                                    <AppText
-                                        color="textMuted"
-                                        variant="caption"
-                                    >
-                                        {activity.category}
-                                    </AppText>
-                                ) : null}
-                            </AppCard>
-                        ))}
+                {calendar.data ? (
+                    <View style={styles.details}>
+                        <AppAccordion title="Rincian Kalender Bali hari ini">
+                            <CalendarDetails calendar={calendar.data} />
+                        </AppAccordion>
                     </View>
-                )}
+                ) : null}
 
-                <SectionTitle title="Terakhir disimpan" />
-                {!hasToken ? (
-                    <AppEmptyState
-                        actionLabel="Masuk"
-                        message="Masuk untuk melihat hasil dewasa ayu yang pernah Anda simpan."
-                        onAction={() => navigation.navigate('Login')}
-                        title="Belum masuk"
-                    />
-                ) : saved.isPending ? (
-                    <AppSkeleton height={96} />
-                ) : saved.isError ? (
-                    <AppErrorState
-                        message={saved.error.message}
-                        onRetry={() => {
-                            saved.refetch().catch(() => undefined);
-                        }}
-                    />
-                ) : !saved.data?.[0] ? (
-                    <AppEmptyState
-                        actionLabel="Cari Dewasa Ayu"
-                        message="Hasil yang Anda simpan akan muncul di sini."
-                        onAction={() => navigation.navigate('ActivityList')}
-                        title="Belum ada hasil tersimpan"
-                    />
-                ) : (
-                    <AppCard style={styles.card}>
-                        <AppText weight="semibold">
-                            {saved.data[0].activity?.name ?? 'Hasil Dewasa Ayu'}
-                        </AppText>
-                        <AppText color="textMuted" variant="bodySmall">
-                            {format(
-                                parseISO(saved.data[0].date),
-                                'd MMMM yyyy',
-                                {
-                                    locale: id,
-                                },
-                            )}
-                        </AppText>
-                        <AppButton
-                            label="Lihat hasil"
-                            onPress={() =>
-                                navigation.navigate('SavedDetail', {
-                                    savedId: saved.data![0].id,
-                                })
-                            }
-                            variant="ghost"
-                        />
-                    </AppCard>
-                )}
+                {latestSaved ? (
+                    <>
+                        <SectionTitle title="Terakhir disimpan" />
+                        <AppCard style={styles.card}>
+                            <AppText weight="semibold">
+                                {latestSaved.activity?.name ?? 'Hari baik'}
+                            </AppText>
+                            <AppText color="textMuted" variant="bodySmall">
+                                {format(
+                                    parseISO(latestSaved.date),
+                                    'EEEE, d MMMM yyyy',
+                                    {
+                                        locale: id,
+                                    },
+                                )}
+                            </AppText>
+                            <AppButton
+                                label="Lihat hasil"
+                                onPress={() =>
+                                    navigation.navigate('SavedDetail', {
+                                        savedId: latestSaved.id,
+                                    })
+                                }
+                                variant="ghost"
+                            />
+                        </AppCard>
+                    </>
+                ) : null}
 
-                <AppCard style={styles.infoCard}>
-                    <AppText variant="titleSmall" weight="semibold">
-                        Tentang Wariga
-                    </AppText>
+                <View style={styles.footer}>
                     <AppText color="textMuted" variant="bodySmall">
-                        Wariga adalah pengetahuan tradisional Bali untuk
-                        memahami siklus waktu dan mempertimbangkan hari yang
-                        selaras bagi suatu kegiatan.
-                    </AppText>
-                    <AppText color="textMuted" variant="caption">
-                        Hasil merupakan panduan budaya, bukan keputusan mutlak.
-                        Pertimbangkan pula keadaan, adat setempat, dan nasihat
-                        pihak yang dipercaya.
+                        Hasil Wariga adalah panduan budaya, bukan keputusan
+                        mutlak. Untuk upacara penting, tanyakan juga kepada
+                        sulinggih, pemangku, atau ahli Wariga.
                     </AppText>
                     <AppButton
-                        label="Baca disclaimer"
+                        label="Baca selengkapnya"
                         onPress={() => navigation.navigate('Disclaimer')}
                         variant="ghost"
                     />
-                </AppCard>
+                </View>
             </ScreenContainer>
         </>
     );
 }
 
-function SectionTitle({ title }: { title: string }) {
+function TodayHeader({
+    calendar,
+}: {
+    calendar: UseQueryResult<BaliCalendarDate, Error>;
+}) {
+    const data = calendar.data;
+    const baliDay = data
+        ? [
+              [data.saptawara, data.pancawara].filter(Boolean).join(' '),
+              data.wuku ? `Wuku ${data.wuku}` : null,
+          ]
+              .filter(Boolean)
+              .join(' · ')
+        : null;
+    const lunar = data?.lunar_available
+        ? [lunarPhaseLabel(data), data.sasih ? `Sasih ${data.sasih}` : null]
+              .filter(Boolean)
+              .join(' · ')
+        : null;
+    const rahina = [
+        ...(data?.is_full_moon ? ['Purnama'] : []),
+        ...(data?.is_new_moon ? ['Tilem'] : []),
+        ...(data?.observances
+            ?.filter(item => item.type !== 'moon_phase')
+            .map(item => item.name) ?? []),
+    ];
+
     return (
-        <AppText style={styles.sectionTitle} variant="title" weight="semibold">
-            {title}
-        </AppText>
+        <View style={styles.header}>
+            <AppText color="warning" weight="semibold">
+                Om Swastyastu
+            </AppText>
+            <AppText variant="title" weight="bold">
+                {format(new Date(), 'EEEE, d MMMM yyyy', { locale: id })}
+            </AppText>
+            {calendar.isPending ? (
+                <AppSkeleton height={22} width="70%" />
+            ) : calendar.isError ? (
+                <AppErrorState
+                    message={calendar.error.message}
+                    onRetry={() => calendar.refetch().catch(() => undefined)}
+                />
+            ) : (
+                <>
+                    {baliDay ? (
+                        <AppText weight="semibold">{baliDay}</AppText>
+                    ) : null}
+                    {lunar ? (
+                        <AppText color="textMuted">{lunar}</AppText>
+                    ) : null}
+                    {rahina.length > 0 ? (
+                        <View style={styles.rahinaList}>
+                            {rahina.map(name => (
+                                <AppBadge
+                                    key={name}
+                                    label={name}
+                                    tone="warning"
+                                />
+                            ))}
+                        </View>
+                    ) : null}
+                </>
+            )}
+        </View>
     );
 }
 
-function CalendarSkeleton() {
+function SectionTitle({ title, hint }: { title: string; hint?: string }) {
     return (
-        <AppCard style={styles.card}>
-            <AppSkeleton height={24} width="55%" />
-            <AppSkeleton />
-            <AppSkeleton />
-            <AppSkeleton width="70%" />
-        </AppCard>
+        <View style={styles.sectionTitle}>
+            <AppText variant="titleSmall" weight="bold">
+                {title}
+            </AppText>
+            {hint ? (
+                <AppText color="textMuted" variant="bodySmall">
+                    {hint}
+                </AppText>
+            ) : null}
+        </View>
     );
 }
 
@@ -308,31 +318,10 @@ function DailyRecommendationCard({
     data: DailyRecommendations;
     onSelect: (slug: string, date: string) => void;
 }) {
-    const basis = [
-        data.calendar_basis.saptawara,
-        data.calendar_basis.pancawara,
-        data.calendar_basis.wuku,
-        data.calendar_basis.sasih,
-    ].filter(Boolean).join(' • ');
-
     return (
         <AppCard style={styles.dailyCard}>
-            <View style={styles.dailyHeader}>
-                <View style={styles.dailyHeading}>
-                    <AppText variant="titleSmall" weight="semibold">
-                        Rekomendasi hari ini
-                    </AppText>
-                    {basis ? (
-                        <AppText color="textMuted" variant="caption">
-                            Berdasarkan {basis}
-                        </AppText>
-                    ) : null}
-                </View>
-                <AppBadge label="Otomatis" tone="success" />
-            </View>
-
             <RecommendationGroup
-                empty="Belum ada kegiatan dengan dukungan kuat hari ini."
+                empty="Belum ada kegiatan yang sangat cocok hari ini."
                 items={data.recommended}
                 label="Baik dilakukan"
                 onSelect={slug => onSelect(slug, data.date)}
@@ -340,20 +329,26 @@ function DailyRecommendationCard({
             />
             <View style={styles.divider} />
             <RecommendationGroup
-                empty="Tidak ada pantangan kuat yang cocok hari ini."
+                empty="Tidak ada pantangan kuat hari ini."
                 items={data.avoid}
                 label="Sebaiknya dihindari"
                 onSelect={slug => onSelect(slug, data.date)}
                 tone="avoid"
             />
-            <AppText color="textMuted" variant="caption">
-                Ketuk kegiatan untuk melihat alasan dan hal yang perlu dipertimbangkan.
+            <AppText color="textMuted" variant="bodySmall">
+                Ketuk kegiatan untuk melihat alasannya.
             </AppText>
         </AppCard>
     );
 }
 
-function RecommendationGroup({ items, label, empty, tone, onSelect }: {
+function RecommendationGroup({
+    items,
+    label,
+    empty,
+    tone,
+    onSelect,
+}: {
     items: DailyRecommendations['recommended'];
     label: string;
     empty: string;
@@ -362,25 +357,34 @@ function RecommendationGroup({ items, label, empty, tone, onSelect }: {
 }) {
     return (
         <View style={styles.recommendationGroup}>
-            <AppText color={tone === 'good' ? 'success' : 'danger'} weight="semibold">
-                {tone === 'good' ? '✓' : '–'} {label}
+            <AppText
+                color={tone === 'good' ? 'success' : 'danger'}
+                weight="semibold"
+            >
+                {tone === 'good' ? '✓' : '✕'} {label}
             </AppText>
             {items.length === 0 ? (
-                <AppText color="textMuted" variant="bodySmall">{empty}</AppText>
+                <AppText color="textMuted" variant="bodySmall">
+                    {empty}
+                </AppText>
             ) : (
                 <View style={styles.recommendationList}>
                     {items.map(item => (
                         <Pressable
+                            accessibilityRole="button"
                             key={item.id}
                             onPress={() => onSelect(item.slug)}
                             style={({ pressed }) => [
                                 styles.recommendationPill,
-                                tone === 'good' ? styles.goodPill : styles.avoidPill,
+                                tone === 'good'
+                                    ? styles.goodPill
+                                    : styles.avoidPill,
                                 pressed && styles.pressed,
                             ]}
                         >
                             <AppText variant="bodySmall" weight="semibold">
-                                {item.icon ? `${item.icon} ` : ''}{item.name}
+                                {item.icon ? `${item.icon} ` : ''}
+                                {item.name}
                             </AppText>
                         </Pressable>
                     ))}
@@ -390,49 +394,52 @@ function RecommendationGroup({ items, label, empty, tone, onSelect }: {
     );
 }
 
-function TodayCard({ calendar }: { calendar: BaliCalendarDate }) {
-    const phase = calendar.penanggal
-        ? `Penanggal ${calendar.penanggal}`
-        : calendar.pangelong
-        ? `Pangelong ${calendar.pangelong}`
-        : null;
-    const moon = calendar.is_full_moon
-        ? 'Purnama'
-        : calendar.is_new_moon
-        ? 'Tilem'
-        : null;
+function CalendarDetails({ calendar }: { calendar: BaliCalendarDate }) {
     const verified = calendar.verification_status === 'verified';
-    const rahina = calendar.observances?.map(item => item.name).join(', ');
 
     return (
-        <AppCard style={styles.card}>
-            <View style={styles.cardHeader}>
-                <AppText variant="titleSmall" weight="semibold">
-                    {format(parseISO(calendar.date), 'd MMMM yyyy', {
-                        locale: id,
-                    })}
-                </AppText>
-                <AppBadge
-                    label={verified ? 'Terverifikasi' : 'Belum terverifikasi'}
-                    tone={verified ? 'success' : 'warning'}
-                />
-            </View>
-            <CalendarRow label="Wuku" meaning={cycleMeaning('pekan dalam siklus 30 wuku', calendar.wuku_order, 30)} value={calendar.wuku} />
-            <CalendarRow label="Sapta Wara" meaning={waraMeaning(calendar.saptawara, calendar.saptawara_order, 7)} value={calendar.saptawara} />
-            <CalendarRow label="Panca Wara" meaning={waraMeaning(calendar.pancawara, calendar.pancawara_order, 5)} value={calendar.pancawara} />
-            <CalendarRow label="Tri Wara" meaning={waraMeaning(calendar.triwara, calendar.triwara_order, 3)} value={calendar.triwara} />
-            <CalendarRow label="Sad Wara" meaning={waraMeaning(calendar.sadwara, calendar.sadwara_order, 6)} value={calendar.sadwara} />
+        <View style={styles.card}>
+            <CalendarRow
+                label="Wuku"
+                meaning="Nama pekan dalam kalender Bali (ada 30 wuku)."
+                value={calendar.wuku}
+            />
+            <CalendarRow
+                label="Sapta Wara"
+                meaning={saptaMeaning(calendar.saptawara)}
+                value={calendar.saptawara}
+            />
+            <CalendarRow
+                label="Panca Wara"
+                meaning="Hari pasaran lima harian."
+                value={calendar.pancawara}
+            />
+            <CalendarRow
+                label="Tri Wara"
+                meaning="Hari pasaran tiga harian."
+                value={calendar.triwara}
+            />
+            <CalendarRow
+                label="Sad Wara"
+                meaning="Hari pasaran enam harian."
+                value={calendar.sadwara}
+            />
             {calendar.lunar_available ? (
                 <>
                     <CalendarRow
-                        label="Penanggal/Panglong"
-                        meaning={calendar.penanggal ? 'Hari setelah Tilem menuju Purnama.' : 'Hari setelah Purnama menuju Tilem.'}
-                        value={phase}
+                        label="Penanggal/Pangelong"
+                        meaning={
+                            calendar.penanggal
+                                ? 'Hitungan hari dari Tilem menuju Purnama.'
+                                : 'Hitungan hari dari Purnama menuju Tilem.'
+                        }
+                        value={lunarPhaseLabel(calendar)}
                     />
-                    <CalendarRow label="Sasih" meaning="Bulan dalam kalender lunar Bali." value={calendar.sasih} />
-                    {moon ? (
-                        <CalendarRow label="Hari khusus" meaning="Titik utama dalam siklus bulan Bali." value={moon} />
-                    ) : null}
+                    <CalendarRow
+                        label="Sasih"
+                        meaning="Bulan dalam kalender Bali, mengikuti peredaran bulan."
+                        value={calendar.sasih}
+                    />
                 </>
             ) : (
                 <AppText color="textMuted" variant="bodySmall">
@@ -440,12 +447,15 @@ function TodayCard({ calendar }: { calendar: BaliCalendarDate }) {
                         'Data sasih dan fase bulan belum tersedia.'}
                 </AppText>
             )}
-            <CalendarRow
-                label="Rahina"
-                meaning={rahina ? 'Hari suci atau peringatan yang jatuh pada tanggal ini.' : 'Tidak ada hari suci khusus yang terdeteksi.'}
-                value={rahina || 'Tidak ada rahina khusus'}
+            <AppBadge
+                label={
+                    verified
+                        ? 'Sudah dicocokkan dengan rujukan'
+                        : 'Hasil perhitungan'
+                }
+                tone={verified ? 'success' : 'info'}
             />
-        </AppCard>
+        </View>
     );
 }
 
@@ -461,39 +471,44 @@ function CalendarRow({
     return (
         <View style={styles.calendarItem}>
             <View style={styles.row}>
-                <AppText color="textMuted" variant="bodySmall">{label}</AppText>
-                <AppText variant="bodySmall" weight="semibold">{value ?? 'Belum tersedia'}</AppText>
+                <AppText color="textMuted">{label}</AppText>
+                <AppText weight="semibold">{value ?? 'Belum tersedia'}</AppText>
             </View>
-            {meaning ? <AppText color="textMuted" variant="caption">{meaning}</AppText> : null}
+            {meaning ? (
+                <AppText color="textMuted" variant="bodySmall">
+                    {meaning}
+                </AppText>
+            ) : null}
         </View>
     );
 }
 
-function cycleMeaning(label: string, order?: number | null, total?: number) {
-    const description = `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
-    return order ? `${description}; urutan ke-${order} dari ${total}.` : `${description}.`;
-}
-
-function waraMeaning(name?: string | null, order?: number | null, total?: number) {
+function saptaMeaning(name?: string | null) {
     const dayNames: Record<string, string> = {
-        Redite: 'Minggu', Soma: 'Senin', Anggara: 'Selasa', Buda: 'Rabu',
-        Wraspati: 'Kamis', Sukra: 'Jumat', Saniscara: 'Sabtu',
+        Redite: 'Minggu',
+        Soma: 'Senin',
+        Anggara: 'Selasa',
+        Buda: 'Rabu',
+        Wraspati: 'Kamis',
+        Sukra: 'Jumat',
+        Saniscara: 'Sabtu',
     };
-    const position = order ? `urutan ke-${order} dalam siklus ${total} hari` : `bagian dari siklus ${total} hari`;
-    return name && dayNames[name] ? `${name} berarti hari ${dayNames[name]}; ${position}.` : `${name ?? 'Unsur ini'} adalah ${position}.`;
+    return name && dayNames[name]
+        ? `Nama hari Bali; sama dengan hari ${dayNames[name]}.`
+        : 'Nama hari Bali dalam sepekan.';
 }
 
 const styles = StyleSheet.create({
-    actions: {
-        gap: spacing.md,
-        marginBottom: spacing.xl,
-        marginTop: spacing.xl,
-    },
     activity: {
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+        borderRadius: radius.lg,
+        borderWidth: 1,
         flexBasis: '47%',
         flexGrow: 1,
         gap: spacing.sm,
-        minHeight: 132,
+        minHeight: 104,
+        padding: spacing.lg,
     },
     activityIcon: {
         alignSelf: 'flex-start',
@@ -506,51 +521,57 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: spacing.md,
-        marginBottom: spacing.xl,
     },
     card: { gap: spacing.md },
     calendarItem: { gap: spacing.xs },
     dailyCard: { gap: spacing.lg },
-    dailyHeader: {
-        alignItems: 'flex-start',
-        flexDirection: 'row',
-        gap: spacing.md,
-        justifyContent: 'space-between',
-    },
-    dailyHeading: { flex: 1, gap: spacing.xs },
+    details: { marginTop: spacing.xl },
     divider: { backgroundColor: colors.border, height: 1 },
-    recommendationGroup: { gap: spacing.sm },
-    recommendationList: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-    recommendationPill: { borderRadius: 16, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-    goodPill: { backgroundColor: colors.successSoft },
-    avoidPill: { backgroundColor: colors.dangerSoft },
-    pressed: { opacity: 0.65 },
-    cardHeader: {
-        alignItems: 'flex-start',
+    footer: {
+        gap: spacing.sm,
+        marginBottom: spacing.xl,
+        marginTop: spacing.xxl,
+    },
+    header: {
+        gap: spacing.xs,
+        marginBottom: spacing.xl,
+        marginTop: spacing.sm,
+    },
+    rahinaList: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: spacing.sm,
-        justifyContent: 'space-between',
-    },
-    hero: {
-        backgroundColor: colors.darkSurface,
-        borderRadius: 28,
-        gap: spacing.md,
-        marginBottom: spacing.xl,
         marginTop: spacing.sm,
-        overflow: 'hidden',
-        padding: spacing.xl,
     },
-    infoCard: {
-        gap: spacing.md,
-        marginBottom: spacing.xl,
-        marginTop: spacing.xl,
+    recommendationGroup: { gap: spacing.sm },
+    recommendationList: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
     },
+    recommendationPill: {
+        borderRadius: 16,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+    },
+    goodPill: { backgroundColor: colors.successSoft },
+    avoidPill: { backgroundColor: colors.dangerSoft },
+    pressed: { opacity: 0.65 },
     row: {
         alignItems: 'center',
         flexDirection: 'row',
         gap: spacing.md,
         justifyContent: 'space-between',
     },
-    sectionTitle: { marginBottom: spacing.md, marginTop: spacing.xxl },
+    searchCard: {
+        backgroundColor: colors.primary,
+        borderRadius: radius.xl,
+        gap: spacing.md,
+        padding: spacing.xl,
+    },
+    sectionTitle: {
+        gap: spacing.xs,
+        marginBottom: spacing.md,
+        marginTop: spacing.xxl,
+    },
 });

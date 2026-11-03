@@ -34,14 +34,14 @@ export function buildSavedShareMessage(saved: SavedDewasa, url: string) {
     const wuku = calendar?.wuku?.nama ?? 'Tidak tersedia';
 
     return [
-        'Rekomendasi Dewasa Ayu',
+        'Hari Baik (Dewasa Ayu)',
         '',
         `Kegiatan: ${saved.activity?.name ?? 'Kegiatan'}`,
         `Tanggal: ${savedDateLabel(saved.date)}`,
         `Kalender Bali: ${saptaWara} ${pancaWara}`,
         `Wuku: ${wuku}`,
         `Status: ${savedStatusLabel(saved)}`,
-        `Skor: ${saved.score}`,
+        `Nilai: ${saved.score}/100`,
         '',
         'Lihat penjelasan:',
         url,

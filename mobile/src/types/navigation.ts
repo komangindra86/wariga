@@ -2,6 +2,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type MainTabParamList = {
     Home: undefined;
+    Search: undefined;
     Calendar: undefined;
     Saved: undefined;
     About: undefined;
@@ -9,7 +10,8 @@ export type MainTabParamList = {
 
 export type RootStackParamList = {
     MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
-    ActivityList: undefined;
+    // date: cek satu tanggal tertentu (dari Detail Kalender) untuk kegiatan yang dipilih.
+    ActivityList: { date?: string } | undefined;
     DateRange: { activityId: number };
     SearchResult:
         | { activityId?: number; startDate?: string; endDate?: string }

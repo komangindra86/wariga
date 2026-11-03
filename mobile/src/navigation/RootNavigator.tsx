@@ -50,9 +50,10 @@ const navigationTheme = {
 
 const tabIcons: Record<keyof MainTabParamList, string> = {
     Home: '⌂',
+    Search: '✦',
     Calendar: '▦',
     Saved: '♡',
-    About: 'ⓘ',
+    About: '☰',
 };
 
 function MainTabs() {
@@ -89,6 +90,11 @@ function MainTabs() {
                 options={{ tabBarLabel: 'Beranda' }}
             />
             <Tab.Screen
+                component={ActivityListScreen}
+                name="Search"
+                options={{ tabBarLabel: 'Hari Baik' }}
+            />
+            <Tab.Screen
                 component={CalendarScreen}
                 name="Calendar"
                 options={{ tabBarLabel: 'Kalender' }}
@@ -101,7 +107,7 @@ function MainTabs() {
             <Tab.Screen
                 component={AboutScreen}
                 name="About"
-                options={{ tabBarLabel: 'Tentang' }}
+                options={{ tabBarLabel: 'Lainnya' }}
             />
         </Tab.Navigator>
     );
@@ -211,17 +217,17 @@ export function RootNavigator() {
                 <Stack.Screen
                     component={DateRangeScreen}
                     name="DateRange"
-                    options={{ title: 'Rentang Waktu' }}
+                    options={{ title: 'Pilih Waktu' }}
                 />
                 <Stack.Screen
                     component={SearchResultScreen}
                     name="SearchResult"
-                    options={{ title: 'Hasil Pencarian' }}
+                    options={{ title: 'Pilihan Hari Baik' }}
                 />
                 <Stack.Screen
                     component={DewasaDetailScreen}
                     name="DewasaDetail"
-                    options={{ title: 'Detail Dewasa Ayu' }}
+                    options={{ title: 'Detail Hari Baik' }}
                 />
                 <Stack.Screen
                     component={CalendarDetailScreen}

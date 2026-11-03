@@ -32,15 +32,15 @@ type SortOption = NonNullable<DewasaSearchParams['sort']>;
 
 const filters: Array<{ key: ResultFilter; label: string }> = [
     { key: 'all', label: 'Semua' },
-    { key: 'recommended', label: 'Rekomendasi' },
+    { key: 'recommended', label: 'Baik' },
     { key: 'good', label: 'Cukup baik' },
-    { key: 'consideration', label: 'Pertimbangan' },
+    { key: 'consideration', label: 'Pertimbangkan' },
     { key: 'avoid', label: 'Hindari' },
 ];
 const sorts: Array<{ key: SortOption; label: string }> = [
-    { key: 'score_desc', label: 'Skor tertinggi' },
-    { key: 'date_asc', label: 'Tanggal terdekat' },
-    { key: 'date_desc', label: 'Tanggal terlama' },
+    { key: 'score_desc', label: 'Paling baik dulu' },
+    { key: 'date_asc', label: 'Tanggal terdekat dulu' },
+    { key: 'date_desc', label: 'Tanggal terjauh dulu' },
 ];
 
 export function SearchResultScreen({ navigation, route }: Props) {
@@ -109,6 +109,10 @@ export function SearchResultScreen({ navigation, route }: Props) {
                             }
                             recommended={results.data.summary.recommended_count}
                         />
+                        <AppText color="textMuted" variant="bodySmall">
+                            Tanggal yang paling baik tampil paling atas. Ketuk
+                            sebuah tanggal untuk melihat alasannya.
+                        </AppText>
                         <View style={styles.toolbar}>
                             <AppText color="textMuted" variant="bodySmall">
                                 {visible.length} hasil ditampilkan
@@ -169,7 +173,7 @@ export function SearchResultScreen({ navigation, route }: Props) {
                                                                 variant="titleSmall"
                                                                 weight="semibold"
                                                             >
-                                                                {dateLabel(
+                                                                {cardDateLabel(
                                                                     item.date,
                                                                 )}
                                                             </AppText>
@@ -177,8 +181,8 @@ export function SearchResultScreen({ navigation, route }: Props) {
                                                                 color="primary"
                                                                 weight="bold"
                                                             >
-                                                                Skor{' '}
-                                                                {item.score}
+                                                                Nilai{' '}
+                                                                {item.score}/100
                                                             </AppText>
                                                         </View>
                                                         <AppBadge
@@ -262,10 +266,16 @@ function dateLabel(date: string) {
     return format(parseISO(date), 'd MMMM yyyy', { locale: id });
 }
 
+function cardDateLabel(date: string) {
+    return format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: id });
+}
+
 function calendarLabel(item: {
     calendar?: {
         wuku?: { nama: string } | null;
         wewaran?: {
+            panca_wara?: { nama: string } | null;
+            sapta_wara?: { nama: string } | null;
             pancawara?: { nama: string } | null;
             saptawara?: { nama: string } | null;
         };
@@ -273,8 +283,10 @@ function calendarLabel(item: {
 }) {
     const calendar = item.calendar;
     return [
-        calendar?.wewaran?.saptawara?.nama,
-        calendar?.wewaran?.pancawara?.nama,
+        calendar?.wewaran?.sapta_wara?.nama ??
+            calendar?.wewaran?.saptawara?.nama,
+        calendar?.wewaran?.panca_wara?.nama ??
+            calendar?.wewaran?.pancawara?.nama,
         calendar?.wuku?.nama ? `Wuku ${calendar.wuku.nama}` : null,
     ]
         .filter(Boolean)
@@ -294,8 +306,8 @@ function Summary({
 }) {
     const items = [
         ['Diperiksa', checked],
-        ['Rekomendasi', recommended],
-        ['Pertimbangan', consideration],
+        ['Baik', recommended],
+        ['Pertimbangkan', consideration],
         ['Hindari', avoid],
     ];
     return (
@@ -305,7 +317,12 @@ function Summary({
                     <AppText variant="titleSmall" weight="bold">
                         {value}
                     </AppText>
-                    <AppText color="textMuted" variant="caption">
+                    <AppText
+                        adjustsFontSizeToFit
+                        color="textMuted"
+                        numberOfLines={1}
+                        variant="caption"
+                    >
                         {label}
                     </AppText>
                 </View>
@@ -397,11 +414,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.primarySoft,
         borderColor: colors.primarySoft,
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: spacing.lg,
-        justifyContent: 'space-between',
+        gap: spacing.sm,
     },
-    summaryItem: { alignItems: 'center', minWidth: 68 },
+    summaryItem: { alignItems: 'center', flex: 1 },
     toolbar: {
         alignItems: 'center',
         flexDirection: 'row',

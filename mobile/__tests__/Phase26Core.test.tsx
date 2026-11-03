@@ -161,14 +161,12 @@ describe('Fase 26 unit tests', () => {
                 score: 70,
                 status,
             } as DewasaRecommendation);
-        expect(statusPresentation(item('recommended')).label).toBe(
-            'Rekomendasi',
-        );
+        expect(statusPresentation(item('recommended')).label).toBe('Baik');
         expect(
             statusPresentation(item('recommended', 'Cukup Baik')).label,
         ).toBe('Cukup baik');
         expect(statusPresentation(item('consideration')).label).toBe(
-            'Pertimbangan',
+            'Pertimbangkan',
         );
         expect(statusPresentation(item('avoid')).label).toBe('Hindari');
     });
@@ -266,12 +264,20 @@ describe('Fase 26 screen smoke tests', () => {
         [
             'Beranda',
             <HomeScreen navigation={navigation} route={{} as any} />,
-            'Wariga Bali Santih',
+            'Cari hari baik',
         ],
         [
             'Kegiatan',
-            <ActivityListScreen navigation={navigation} route={{} as any} />,
+            <ActivityListScreen navigation={navigation} />,
             'Kegiatan apa',
+        ],
+        [
+            'Kegiatan untuk satu tanggal',
+            <ActivityListScreen
+                navigation={navigation}
+                route={{ params: { date: '2026-08-17' } }}
+            />,
+            'Senin, 17 Agustus 2026',
         ],
         [
             'Rentang',
@@ -279,7 +285,7 @@ describe('Fase 26 screen smoke tests', () => {
                 navigation={navigation}
                 route={{ params: { activityId: 1 } } as any}
             />,
-            'Pilih rentang waktu',
+            'Kapan rencananya',
         ],
         [
             'Hasil',

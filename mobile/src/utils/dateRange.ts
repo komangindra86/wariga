@@ -57,7 +57,8 @@ export function presetDateRange(
     }
     if (preset === 'this_month') {
         return {
-            startDate: format(startOfMonth(date), 'yyyy-MM-dd'),
+            // Mulai hari ini: tanggal yang sudah lewat tidak berguna untuk dicari.
+            startDate: today,
             endDate: format(endOfMonth(date), 'yyyy-MM-dd'),
         };
     }

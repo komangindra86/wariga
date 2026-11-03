@@ -37,7 +37,7 @@ describe('Fase 19 hasil pencarian Dewasa Ayu', () => {
     test('memetakan status API ke label yang ramah pengguna', () => {
         expect(
             statusPresentation(result('Perlu Pertimbangan', 'consideration')),
-        ).toEqual({ label: 'Pertimbangan', tone: 'warning' });
+        ).toEqual({ label: 'Pertimbangkan', tone: 'warning' });
         expect(
             statusPresentation(result('Sebaiknya Dihindari', 'avoid')),
         ).toEqual({ label: 'Hindari', tone: 'danger' });

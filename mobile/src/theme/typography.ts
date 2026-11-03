@@ -7,7 +7,7 @@ export const typography = {
     },
     fontSize: {
         caption: 12,
-        bodySmall: 14,
+        bodySmall: 15,
         body: 16,
         titleSmall: 19,
         title: 25,
@@ -15,7 +15,7 @@ export const typography = {
     },
     lineHeight: {
         caption: 16,
-        bodySmall: 20,
+        bodySmall: 22,
         body: 24,
         titleSmall: 26,
         title: 33,

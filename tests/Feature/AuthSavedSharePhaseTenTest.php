@@ -23,8 +23,6 @@ class AuthSavedSharePhaseTenTest extends TestCase
         parent::setUp();
         $this->seed(BaliCalendarMasterSeeder::class);
         config([
-            'wariga.reference_date' => '2026-07-29',
-            'wariga.reference_cycle_index' => 0,
             'wariga.engine_version' => '10.0.0',
             'wariga.rule_version' => '10.0.0',
         ]);

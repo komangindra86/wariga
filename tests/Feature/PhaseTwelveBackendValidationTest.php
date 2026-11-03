@@ -16,10 +16,6 @@ final class PhaseTwelveBackendValidationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config([
-            'wariga.reference_date' => '2026-07-29',
-            'wariga.reference_cycle_index' => 0,
-        ]);
         $this->seed(BaliCalendarMasterSeeder::class);
     }
 

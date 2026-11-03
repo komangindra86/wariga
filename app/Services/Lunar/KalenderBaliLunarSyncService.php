@@ -157,8 +157,9 @@ final class KalenderBaliLunarSyncService
         $html = mb_convert_encoding($html, 'UTF-8', 'ISO-8859-1');
         $lunar = $this->capture($html, 'Purnama,\s*Tilem,\s*Penanggal,\s*dan\s*Pangelong');
         $sasihText = $this->capture($html, 'Sasih');
-        $isNampih = str_contains(mb_strtolower($sasihText), 'nampih');
-        $sasihName = trim((string) preg_replace('/\bnampih\b/i', '', $sasihText));
+        // KalenderBali.org menandai sasih nampih dengan awalan "Mala", mis. "Mala Sadha".
+        $isNampih = preg_match('/\b(nampih|mala)\b/i', $sasihText) === 1;
+        $sasihName = trim((string) preg_replace('/\b(nampih|mala)\b/i', '', $sasihText));
         $sasihName = match (mb_strtolower($sasihName)) {
             'ketiga' => 'Katiga',
             'kelima' => 'Kalima',

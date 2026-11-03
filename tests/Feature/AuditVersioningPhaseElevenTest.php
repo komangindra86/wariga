@@ -16,7 +16,6 @@ class AuditVersioningPhaseElevenTest extends TestCase
     {
         $this->seed(BaliCalendarMasterSeeder::class);
         config([
-            'wariga.reference_date' => '2026-01-01',
             'wariga.engine_version' => '11.2.0',
             'wariga.rule_version' => '11.3.0',
             'wariga.dataset_version' => '11.4.0',
@@ -38,8 +37,6 @@ class AuditVersioningPhaseElevenTest extends TestCase
             'engine_version' => '2.0.0',
             'rule_version' => '3.0.0',
             'dataset_version' => '4.0.0',
-            'reference_date' => '2026-01-01',
-            'reference_cycle_index' => 15,
             'initial_score' => 55,
             'search_cache_ttl' => 600,
         ])->assertRedirect();

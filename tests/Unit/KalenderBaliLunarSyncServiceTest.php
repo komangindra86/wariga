@@ -42,6 +42,17 @@ class KalenderBaliLunarSyncServiceTest extends TestCase
         $this->assertTrue($row['is_nampih_sasih']);
     }
 
+    public function test_parses_mala_prefix_as_nampih_sasih(): void
+    {
+        $row = app(KalenderBaliLunarSyncService::class)->parseDailyPage('2027-05-17', <<<'HTML'
+        <a title="Purnama, Tilem, Penanggal, dan Pangelong">Penanggal 12</a>
+        <a title="Sasih">Mala Jiyestha</a>
+        HTML);
+
+        $this->assertSame(12, $row['nomor_hari']);
+        $this->assertTrue($row['is_nampih_sasih']);
+    }
+
     public function test_normalizes_source_sasih_spelling(): void
     {
         $row = app(KalenderBaliLunarSyncService::class)->parseDailyPage('2026-01-01', <<<'HTML'

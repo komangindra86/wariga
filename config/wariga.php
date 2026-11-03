@@ -9,10 +9,6 @@ return [
     'engine_version' => env('WARIGA_ENGINE_VERSION', '0.2.0'),
     'rule_version' => env('WARIGA_RULE_VERSION', '1.0.0'),
     'dataset_version' => env('WARIGA_DATASET_VERSION', '1.0.0'),
-    'reference_date' => env('WARIGA_REFERENCE_DATE'),
-    // Dikunci terhadap rujukan KalenderBali.org:
-    // 30-08-2026 = Redite Indra, Wuku Uye (indeks siklus 147).
-    'reference_cycle_index' => (int) env('WARIGA_REFERENCE_CYCLE_INDEX', 115),
     'initial_score' => (int) env('WARIGA_INITIAL_SCORE', 50),
 
     'search' => [

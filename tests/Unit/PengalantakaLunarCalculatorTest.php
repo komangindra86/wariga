@@ -32,6 +32,42 @@ class PengalantakaLunarCalculatorTest extends TestCase
         }
     }
 
+    public function test_nampih_sasih_matches_kalender_bali(): void
+    {
+        $calculator = new PengalantakaLunarCalculator;
+
+        // kalenderbali.org/purnamatilem.php?tahun=2027
+        $jiyestha = $calculator->calculate('2027-05-05');
+        $this->assertTrue($jiyestha->isTilem);
+        $this->assertSame('jiyestha', $jiyestha->sasih['kode']);
+        $this->assertFalse($jiyestha->isNampihSasih);
+
+        $mala = $calculator->calculate('2027-05-20');
+        $this->assertTrue($mala->isPurnama);
+        $this->assertSame('jiyestha', $mala->sasih['kode']);
+        $this->assertTrue($mala->isNampihSasih);
+
+        $sadha = $calculator->calculate('2027-06-19');
+        $this->assertTrue($sadha->isPurnama);
+        $this->assertSame('sadha', $sadha->sasih['kode']);
+
+        // Sebelum Mala Sadha 2024: Tilem Kasanga 10 Maret 2024 (Nyepi 11 Maret 2024).
+        $kasanga = $calculator->calculate('2024-03-10');
+        $this->assertTrue($kasanga->isTilem);
+        $this->assertSame('kasanga', $kasanga->sasih['kode']);
+    }
+
+    public function test_pengunalatri_that_swallows_tilem_is_labelled_tilem(): void
+    {
+        $calculator = new PengalantakaLunarCalculator;
+
+        // Tilem Kenam 28 Desember 2027 jatuh pada hari pengunalatri.
+        $this->assertTrue($calculator->isPengunalatri('2027-12-28'));
+        $tilem = $calculator->calculate('2027-12-28');
+        $this->assertTrue($tilem->isTilem);
+        $this->assertSame('kanem', $tilem->sasih['kode']);
+    }
+
     public function test_calculates_dates_outside_verified_dataset(): void
     {
         $result = (new PengalantakaLunarCalculator)->calculate('2027-01-01');

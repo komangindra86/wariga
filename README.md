@@ -123,15 +123,13 @@ tetap nonpublik dan tidak menghasilkan data sampai rumusnya diverifikasi.
 
 1. Salin `.env.example` menjadi `.env`, lalu sesuaikan koneksi MySQL.
 2. Buat database bernama `wariga_bali_santih`.
-3. Isi `WARIGA_REFERENCE_DATE` dan `WARIGA_REFERENCE_CYCLE_INDEX` menggunakan
-   tanggal acuan yang sudah diverifikasi.
-4. Jalankan `composer install`.
-5. Jalankan `php artisan key:generate`.
-6. Jalankan `php artisan migrate`.
-7. Isi `ADMIN_EMAIL` dan `ADMIN_PASSWORD` untuk membuat super admin saat seeding,
+3. Jalankan `composer install`.
+4. Jalankan `php artisan key:generate`.
+5. Jalankan `php artisan migrate`.
+6. Isi `ADMIN_EMAIL` dan `ADMIN_PASSWORD` untuk membuat super admin saat seeding,
    lalu jalankan `php artisan db:seed`.
-8. Jalankan `npm install`.
-9. Jalankan `composer run dev`, atau jalankan `php artisan serve` dan `npm run dev`
+7. Jalankan `npm install`.
+8. Jalankan `composer run dev`, atau jalankan `php artisan serve` dan `npm run dev`
    pada dua terminal.
 
 Jika Laragon masih memakai PHP lama, pilih PHP 8.2+ melalui menu Laragon atau

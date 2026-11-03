@@ -14,22 +14,18 @@ final class WarigaCycleFixtureServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config([
-            'wariga.reference_date' => '2026-07-29',
-            'wariga.reference_cycle_index' => 0,
-        ]);
         $this->seed(BaliCalendarMasterSeeder::class);
     }
 
     public function test_fixture_covers_exactly_one_complete_cycle(): void
     {
-        $rows = app(WarigaCycleFixtureService::class)->generate('2026-07-29');
+        $rows = app(WarigaCycleFixtureService::class)->generate('2026-04-05');
 
         $this->assertCount(210, $rows);
         $this->assertSame(range(0, 209), array_column($rows, 'cycle_index'));
         $this->assertCount(30, array_unique(array_column($rows, 'wuku')));
-        $this->assertSame('2026-07-29', $rows[0]['tanggal']);
-        $this->assertSame('2027-02-23', $rows[209]['tanggal']);
+        $this->assertSame('2026-04-05', $rows[0]['tanggal']);
+        $this->assertSame('2026-10-31', $rows[209]['tanggal']);
 
         foreach ($rows as $row) {
             $this->assertSame(
@@ -43,7 +39,7 @@ final class WarigaCycleFixtureServiceTest extends TestCase
     public function test_comparison_reports_matches_differences_and_missing_references(): void
     {
         $service = app(WarigaCycleFixtureService::class);
-        $system = array_slice($service->generate('2026-07-29'), 0, 3);
+        $system = array_slice($service->generate('2026-04-05'), 0, 3);
         $expert = array_map(
             fn (array $row): array => array_map('strval', $row),
             array_slice($system, 0, 2),

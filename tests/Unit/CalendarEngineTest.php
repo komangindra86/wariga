@@ -3,12 +3,12 @@
 namespace Tests\Unit;
 
 use App\Services\Calendar\BaliCalendarService;
+use App\Services\Calendar\CycleCalculator;
 use App\Support\PositiveModulo;
 use Carbon\Carbon;
 use Database\Seeders\BaliCalendarMasterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
-use RuntimeException;
 use Tests\TestCase;
 
 class CalendarEngineTest extends TestCase
@@ -23,8 +23,6 @@ class CalendarEngineTest extends TestCase
 
         config()->set([
             'wariga.engine_version' => '0.1.0-test',
-            'wariga.reference_date' => '2024-02-29',
-            'wariga.reference_cycle_index' => 0,
             'wariga.timezone' => 'Asia/Makassar',
         ]);
 
@@ -32,11 +30,13 @@ class CalendarEngineTest extends TestCase
         $this->service = app(BaliCalendarService::class);
     }
 
-    public function test_reference_date_returns_configured_cycle_index(): void
+    public function test_cycle_start_is_redite_paing_sinta(): void
     {
-        $result = $this->service->calculate('2024-02-29');
+        $this->assertSame('2026-04-05', CycleCalculator::cycleStartDate());
 
-        $this->assertSame('2024-02-29', $result->tanggalMasehi);
+        $result = $this->service->calculate('2026-04-05');
+
+        $this->assertSame('2026-04-05', $result->tanggalMasehi);
         $this->assertSame(0, $result->cycleIndex);
         $this->assertSame(1, $result->hariKeSiklus210);
         $this->assertSame('Sinta', $result->wuku->nama);
@@ -58,12 +58,34 @@ class CalendarEngineTest extends TestCase
         $this->assertSame('0.1.0-test', $result->engineVersion);
     }
 
-    public function test_dates_before_and_after_reference_wrap_in_cycle(): void
+    public function test_epoch_matches_galungan_anchor(): void
     {
-        $this->assertSame(209, $this->service->calculate('2024-02-28')->cycleIndex);
-        $this->assertSame(1, $this->service->calculate('2024-03-01')->cycleIndex);
-        $this->assertSame(7, $this->service->calculate('2024-03-07')->cycleIndex);
-        $this->assertSame(208, $this->service->calculate('2024-02-27')->cycleIndex);
+        $epoch = $this->service->calculate(CycleCalculator::EPOCH_DATE);
+        $galungan = $this->service->calculate('2026-06-17');
+
+        $this->assertSame(CycleCalculator::EPOCH_CYCLE_INDEX, $epoch->cycleIndex);
+        $this->assertSame(73, $galungan->cycleIndex);
+        $this->assertSame('Dungulan', $galungan->wuku->nama);
+        $this->assertSame('Buda', $galungan->wewaran['sapta_wara']->nama);
+        $this->assertSame('Kliwon', $galungan->wewaran['panca_wara']->nama);
+    }
+
+    public function test_epoch_cannot_be_overridden_from_configuration(): void
+    {
+        config()->set([
+            'wariga.reference_date' => '2024-02-29',
+            'wariga.reference_cycle_index' => 0,
+        ]);
+
+        $this->assertSame(73, $this->service->calculate('2026-06-17')->cycleIndex);
+    }
+
+    public function test_dates_before_and_after_cycle_start_wrap_in_cycle(): void
+    {
+        $this->assertSame(209, $this->service->calculate('2026-04-04')->cycleIndex);
+        $this->assertSame(1, $this->service->calculate('2026-04-06')->cycleIndex);
+        $this->assertSame(7, $this->service->calculate('2026-04-12')->cycleIndex);
+        $this->assertSame(208, $this->service->calculate('2026-04-03')->cycleIndex);
     }
 
     public function test_cycle_returns_to_same_index_after_210_days(): void
@@ -78,10 +100,9 @@ class CalendarEngineTest extends TestCase
 
     public function test_leap_year_boundary_counts_each_calendar_day(): void
     {
-        config()->set('wariga.reference_date', '2024-02-28');
-
-        $this->assertSame(1, $this->service->calculate('2024-02-29')->cycleIndex);
-        $this->assertSame(2, $this->service->calculate('2024-03-01')->cycleIndex);
+        $this->assertSame(64, $this->service->calculate('2028-02-28')->cycleIndex);
+        $this->assertSame(65, $this->service->calculate('2028-02-29')->cycleIndex);
+        $this->assertSame(66, $this->service->calculate('2028-03-01')->cycleIndex);
     }
 
     public function test_positive_modulo_handles_negative_numbers(): void
@@ -98,23 +119,13 @@ class CalendarEngineTest extends TestCase
         PositiveModulo::positiveModulo(1, 0);
     }
 
-    public function test_calculation_is_rejected_when_reference_date_is_missing(): void
-    {
-        config()->set('wariga.reference_date');
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Konfigurasi Calendar Engine belum lengkap');
-
-        $this->service->calculate('2026-07-29');
-    }
-
     public function test_calculation_uses_asia_makassar_timezone(): void
     {
-        $utcDate = Carbon::parse('2024-02-29 16:30:00', 'UTC');
+        $utcDate = Carbon::parse('2026-04-05 16:30:00', 'UTC');
 
         $result = $this->service->calculate($utcDate);
 
-        $this->assertSame('2024-03-01', $result->tanggalMasehi);
+        $this->assertSame('2026-04-06', $result->tanggalMasehi);
         $this->assertSame(1, $result->cycleIndex);
     }
 }

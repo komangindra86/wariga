@@ -24,8 +24,6 @@ class DewasaSearchPhaseSevenTest extends TestCase
         parent::setUp();
         $this->seed(BaliCalendarMasterSeeder::class);
         config([
-            'wariga.reference_date' => '2026-07-29',
-            'wariga.reference_cycle_index' => 0,
             'wariga.search.cache_ttl' => 3600,
         ]);
         Cache::clear();

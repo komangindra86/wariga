@@ -217,8 +217,6 @@ class AdminModuleController extends Controller
             'engine_version' => config('wariga.engine_version'),
             'rule_version' => config('wariga.rule_version'),
             'dataset_version' => config('wariga.dataset_version'),
-            'reference_date' => config('wariga.reference_date'),
-            'reference_cycle_index' => config('wariga.reference_cycle_index'),
             'initial_score' => config('wariga.initial_score'),
             'search.cache_ttl' => config('wariga.search.cache_ttl'),
         ]]);
@@ -231,16 +229,12 @@ class AdminModuleController extends Controller
             'engine_version' => ['required', 'string', 'max:50'],
             'rule_version' => ['required', 'string', 'max:50'],
             'dataset_version' => ['sometimes', 'string', 'max:50'],
-            'reference_date' => ['nullable', 'date_format:Y-m-d'],
-            'reference_cycle_index' => ['sometimes', 'integer', 'between:0,209'],
             'initial_score' => ['required', 'integer', 'between:0,100'],
             'search_cache_ttl' => ['required', 'integer', 'between:60,86400'],
         ]);
         $values = [
             'engine_version' => $data['engine_version'], 'rule_version' => $data['rule_version'],
             'dataset_version' => $data['dataset_version'] ?? (string) config('wariga.dataset_version'),
-            'reference_date' => $data['reference_date'] ?? config('wariga.reference_date'),
-            'reference_cycle_index' => (int) ($data['reference_cycle_index'] ?? config('wariga.reference_cycle_index')),
             'initial_score' => (int) $data['initial_score'], 'search.cache_ttl' => (int) $data['search_cache_ttl'],
         ];
         foreach ($values as $key => $value) {
@@ -255,7 +249,6 @@ class AdminModuleController extends Controller
                     'engine_version' => 'engine.version_changed',
                     'rule_version' => 'rule.version_changed',
                     'dataset_version' => 'dataset.version_changed',
-                    'reference_date', 'reference_cycle_index' => 'engine.reference_date_changed',
                     'initial_score' => 'engine.score_threshold_changed',
                     default => 'engine.formula_configuration_changed',
                 };

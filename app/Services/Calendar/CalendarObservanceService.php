@@ -7,6 +7,21 @@ use Carbon\Carbon;
 final class CalendarObservanceService
 {
     /**
+     * Rerainan yang jatuh tetap tiap 210 hari: [sapta wara, panca wara, wuku, nama, tipe].
+     * Nama disamakan dengan config wariga.hindu_observances agar tidak dobel.
+     */
+    private const PAWUKON_RERAINAN = [
+        ['Anggara', 'Wage', 'Dungulan', 'Hari Penampahan Galungan', 'hindu_holiday'],
+        ['Buda', 'Kliwon', 'Dungulan', 'Hari Raya Galungan', 'hindu_holiday'],
+        ['Wraspati', 'Umanis', 'Dungulan', 'Hari Umanis Galungan', 'hindu_holiday'],
+        ['Sukra', 'Wage', 'Kuningan', 'Hari Penampahan Kuningan', 'hindu_holiday'],
+        ['Saniscara', 'Kliwon', 'Kuningan', 'Hari Raya Kuningan', 'hindu_holiday'],
+        ['Saniscara', 'Umanis', 'Watugunung', 'Hari Raya Saraswati', 'hindu_holiday'],
+        ['Redite', 'Paing', 'Sinta', 'Banyu Pinaruh', 'balinese_observance'],
+        ['Buda', 'Kliwon', 'Sinta', 'Hari Raya Pagerwesi', 'hindu_holiday'],
+    ];
+
+    /**
      * @param  array<string, mixed>  $calendar
      * @param  array<string, mixed>  $lunar
      * @return array{observances: list<array{name: string, type: string}>, is_public_holiday: bool, is_red_date: bool}
@@ -46,11 +61,10 @@ final class CalendarObservanceService
         if ($sapta === 'Buda' && $panca === 'Kliwon') {
             $add('Buda Kliwon'.($wuku ? " {$wuku}" : ''), 'balinese_observance');
         }
-        if ($sapta === 'Buda' && $panca === 'Kliwon' && $wuku === 'Dungulan') {
-            $add('Hari Raya Galungan', 'hindu_holiday');
-        }
-        if ($sapta === 'Saniscara' && $panca === 'Kliwon' && $wuku === 'Kuningan') {
-            $add('Hari Raya Kuningan', 'hindu_holiday');
+        foreach (self::PAWUKON_RERAINAN as [$raSapta, $raPanca, $raWuku, $name, $type]) {
+            if ($sapta === $raSapta && $panca === $raPanca && $wuku === $raWuku) {
+                $add($name, $type);
+            }
         }
 
         $tumpek = [

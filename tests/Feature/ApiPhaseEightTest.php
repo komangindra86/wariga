@@ -21,8 +21,7 @@ class ApiPhaseEightTest extends TestCase
     {
         parent::setUp();
         $this->seed(BaliCalendarMasterSeeder::class);
-        config(['wariga.reference_date' => '2026-07-29', 'wariga.reference_cycle_index' => 0]);
-        $this->activity = WarigaActivity::query()->create([
+                $this->activity = WarigaActivity::query()->create([
             'kode' => 'API', 'nama' => 'API Test', 'slug' => 'api-test', 'kategori' => 'Test',
             'deskripsi' => 'Test', 'disclaimer' => 'Test', 'is_active' => true,
         ]);

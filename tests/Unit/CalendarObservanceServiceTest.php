@@ -61,6 +61,21 @@ class CalendarObservanceServiceTest extends TestCase
         );
     }
 
+    public function test_saraswati_is_derived_outside_configured_years(): void
+    {
+        $result = app(CalendarObservanceService::class)->forDate('2027-05-29', [
+            'wuku' => ['nama' => 'Watugunung'],
+            'wewaran' => [
+                'tri_wara' => ['nama' => 'Pasah'],
+                'panca_wara' => ['nama' => 'Umanis'],
+                'sapta_wara' => ['nama' => 'Saniscara'],
+            ],
+        ], []);
+
+        $this->assertContains('Hari Raya Saraswati', array_column($result['observances'], 'name'));
+        $this->assertTrue($result['is_red_date']);
+    }
+
     public function test_galungan_and_kuningan_are_recurring_red_dates(): void
     {
         $service = app(CalendarObservanceService::class);

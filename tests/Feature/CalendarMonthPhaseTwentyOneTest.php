@@ -17,8 +17,6 @@ class CalendarMonthPhaseTwentyOneTest extends TestCase
         $this->seed(BaliCalendarMasterSeeder::class);
         $this->seed(LunarReference2026Seeder::class);
         config([
-            'wariga.reference_date' => '2026-07-29',
-            'wariga.reference_cycle_index' => 0,
         ]);
     }
 
@@ -32,7 +30,7 @@ class CalendarMonthPhaseTwentyOneTest extends TestCase
             ->assertJsonPath('data.items.26.lunar.is_purnama', true)
             ->assertJsonPath('data.items.16.is_public_holiday', true)
             ->assertJsonPath('data.items.16.observances.0.name', 'Proklamasi Kemerdekaan')
-            ->assertJsonPath('data.items.0.calendar.wewaran.tri_wara.nama', 'Pasah')
+            ->assertJsonPath('data.items.0.calendar.wewaran.tri_wara.nama', 'Beteng')
             ->assertJsonPath('data.items.0.calendar.wewaran.panca_wara.nama', 'Kliwon')
             ->assertJsonStructure([
                 'data' => [

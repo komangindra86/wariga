@@ -2,6 +2,7 @@
 
 namespace App\Services\Calendar;
 
+use App\Contracts\LunarCalendarProviderInterface;
 use Carbon\Carbon;
 
 final class CalendarObservanceService
@@ -11,15 +12,26 @@ final class CalendarObservanceService
      * Nama disamakan dengan config wariga.hindu_observances agar tidak dobel.
      */
     private const PAWUKON_RERAINAN = [
+        ['Wraspati', 'Wage', 'Sungsang', 'Sugihan Jawa', 'balinese_observance'],
+        ['Sukra', 'Kliwon', 'Sungsang', 'Sugihan Bali', 'balinese_observance'],
+        ['Redite', 'Paing', 'Dungulan', 'Penyekeban Galungan', 'balinese_observance'],
+        ['Soma', 'Pon', 'Dungulan', 'Penyajaan Galungan', 'balinese_observance'],
         ['Anggara', 'Wage', 'Dungulan', 'Hari Penampahan Galungan', 'hindu_holiday'],
         ['Buda', 'Kliwon', 'Dungulan', 'Hari Raya Galungan', 'hindu_holiday'],
         ['Wraspati', 'Umanis', 'Dungulan', 'Hari Umanis Galungan', 'hindu_holiday'],
+        ['Saniscara', 'Pon', 'Dungulan', 'Pemaridan Guru', 'balinese_observance'],
+        ['Redite', 'Wage', 'Kuningan', 'Ulihan', 'balinese_observance'],
+        ['Soma', 'Kliwon', 'Kuningan', 'Pemacekan Agung', 'balinese_observance'],
         ['Sukra', 'Wage', 'Kuningan', 'Hari Penampahan Kuningan', 'hindu_holiday'],
         ['Saniscara', 'Kliwon', 'Kuningan', 'Hari Raya Kuningan', 'hindu_holiday'],
         ['Saniscara', 'Umanis', 'Watugunung', 'Hari Raya Saraswati', 'hindu_holiday'],
         ['Redite', 'Paing', 'Sinta', 'Banyu Pinaruh', 'balinese_observance'],
+        ['Soma', 'Pon', 'Sinta', 'Soma Ribek', 'balinese_observance'],
+        ['Anggara', 'Wage', 'Sinta', 'Sabuh Mas', 'balinese_observance'],
         ['Buda', 'Kliwon', 'Sinta', 'Hari Raya Pagerwesi', 'hindu_holiday'],
     ];
+
+    public function __construct(private readonly LunarCalendarProviderInterface $lunar) {}
 
     /**
      * @param  array<string, mixed>  $calendar
@@ -78,6 +90,10 @@ final class CalendarObservanceService
             $add($tumpek[$wuku], 'balinese_observance');
         }
 
+        foreach ($this->sasihRerainan(Carbon::parse($date), $lunar) as $name) {
+            $add($name, 'hindu_holiday');
+        }
+
         if (($lunar['is_purnama'] ?? false) === true) {
             $add('Purnama', 'moon_phase');
         }
@@ -92,5 +108,45 @@ final class CalendarObservanceService
             'is_public_holiday' => in_array('national_holiday', $types, true),
             'is_red_date' => count(array_intersect($types, ['national_holiday', 'hindu_holiday'])) > 0,
         ];
+    }
+
+    /**
+     * Rerainan yang mengikuti sasih (Bimas Hindu): Siwa Ratri = purwaning Tilem Kapitu,
+     * Tawur Agung = Tilem Kasanga, Nyepi dan Ngembak Geni = 1 dan 2 hari sesudahnya.
+     * Dihitung dari hari Tilem, bukan nomor pangelong, agar tetap benar saat pengunalatri.
+     *
+     * @param  array<string, mixed>  $lunar
+     * @return list<string>
+     */
+    private function sasihRerainan(Carbon $date, array $lunar): array
+    {
+        if (($lunar['available'] ?? false) !== true) {
+            return [];
+        }
+        $isTilem = function (array $day, string $sasih): bool {
+            return ($day['is_tilem'] ?? false) === true
+                && ($day['sasih']['kode'] ?? null) === $sasih
+                && ($day['is_nampih_sasih'] ?? false) !== true;
+        };
+        $at = fn (int $offset): array => $this->lunar->getForDate($date->copy()->addDays($offset))->toArray();
+        $phase = $lunar['fase'] ?? null;
+        $dayNumber = (int) ($lunar['nomor_hari'] ?? 0);
+        $names = [];
+
+        if ($phase === 'pangelong' && $dayNumber >= 13 && $dayNumber < 15 && $isTilem($at(1), 'kapitu')) {
+            $names[] = 'Hari Suci Siwa Ratri';
+        }
+        if ($isTilem($lunar, 'kasanga')) {
+            $names[] = 'Hari Tawur Agung Kesanga';
+        }
+        if ($phase === 'penanggal' && $dayNumber <= 3) {
+            if ($isTilem($at(-1), 'kasanga')) {
+                $names[] = 'Hari Suci Nyepi Tahun Baru Saka '.($date->year - 78);
+            } elseif ($isTilem($at(-2), 'kasanga')) {
+                $names[] = 'Ngembak Geni';
+            }
+        }
+
+        return $names;
     }
 }

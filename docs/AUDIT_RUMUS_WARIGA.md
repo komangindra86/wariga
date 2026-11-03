@@ -11,6 +11,7 @@ purnama/tilem, rerainan). Aturan ala-ayuning dewasa tidak ikut diaudit di sini.
 | Penanggal/pangelong, purnama, tilem | 318/322 cocok (2024–2037) | 322/322 (2024–2037), 198/198 (2000–2007) | Valid |
 | Nama sasih | 34/108 cocok; meleset di luar Jul 2024–Mei 2027 | 322/322 (2024–2037) | Valid hanya 2024–2037 |
 | Rerainan pawukon (Saraswati, Pagerwesi, dst.) | hanya muncul untuk 2026 (hardcode) | dihitung tiap 210 hari | Valid |
+| Rerainan sasih (Siwa Ratri, Tawur Kesanga, Nyepi, Ngembak Geni) | hanya muncul untuk 2026 (hardcode) | dihitung dari Tilem Kapitu/Kasanga; cocok dengan Nyepi 2023–2026 dan Siwa Ratri 2026–2027 | Valid sejauh nama sasih valid (2024–2037) |
 
 Pembanding: halaman harian `kalenderbali.org/index.php?bulan=&tanggal=&tahun=`
 (108 tanggal) dan `kalenderbali.org/purnamatilem.php?tahun=` (520 purnama/tilem,
@@ -99,8 +100,9 @@ Pengecekan titik acuan: 17-06-2026 = Buda Kliwon Dungulan (Galungan, i = 73) dan
 2. Tabel nampih harus ditambah untuk tahun sebelum 2024 dan sesudah 2037.
 3. Ingkel, Watek, Lintang, Pararasan, Panca Suda, Pratiti, dan Eka Jala Resi
    (yang ditampilkan kalenderbali.org) belum dihitung engine.
-4. Daftar libur nasional dan hari raya berbasis sasih (Nyepi, Siwaratri) masih
-   hardcode untuk 2026 saja.
+4. Daftar libur nasional (SKB 3 Menteri) masih hardcode untuk 2026 saja.
+   Rerainan sasih sudah dihitung: Siwa Ratri = sehari sebelum Tilem Kapitu,
+   Tawur Agung = Tilem Kasanga, Nyepi dan Ngembak Geni = 1 dan 2 hari sesudahnya.
 
 ## Rujukan
 

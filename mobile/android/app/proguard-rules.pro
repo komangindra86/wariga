@@ -8,3 +8,7 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# react-native-config resolves this class by name at runtime. R8 must not
+# rename or remove it, otherwise Config values are empty in release builds.
+-keep class com.balisantih.wariga.BuildConfig { *; }

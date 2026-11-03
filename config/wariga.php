@@ -6,7 +6,7 @@ return [
         .'sebagai referensi eksternal. Aplikasi ini tidak berafiliasi dengan KalenderBali.org.',
     'api_rate_limit' => (int) env('WARIGA_API_RATE_LIMIT', 60),
     'timezone' => env('WARIGA_TIMEZONE', 'Asia/Makassar'),
-    'engine_version' => env('WARIGA_ENGINE_VERSION', '0.2.0'),
+    'engine_version' => env('WARIGA_ENGINE_VERSION', '0.3.0'),
     'rule_version' => env('WARIGA_RULE_VERSION', '1.0.0'),
     'dataset_version' => env('WARIGA_DATASET_VERSION', '1.0.0'),
     'initial_score' => (int) env('WARIGA_INITIAL_SCORE', 50),

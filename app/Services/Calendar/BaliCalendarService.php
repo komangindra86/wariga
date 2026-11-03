@@ -44,7 +44,7 @@ final class BaliCalendarService
                 $this->wukuCalculator->calculateOrder($cycleIndex),
             )),
             wewaran: $this->resolveWewaran($orders),
-            engineVersion: (string) config('wariga.engine_version', '0.2.0'),
+            engineVersion: (string) config('wariga.engine_version', '0.3.0'),
         );
     }
 

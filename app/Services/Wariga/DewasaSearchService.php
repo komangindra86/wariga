@@ -231,7 +231,7 @@ final class DewasaSearchService
             'activity' => $activityId,
             'start' => $start->toDateString(),
             'end' => $end->toDateString(),
-            'engine' => config('wariga.engine_version', '0.2.0'),
+            'engine' => config('wariga.engine_version', '0.3.0'),
             'ala_ayu_rules' => hash('sha256', json_encode($alaAyuVersion)),
             'validated_months' => hash('sha256', json_encode($validationVersion)),
             'mode' => $mode,

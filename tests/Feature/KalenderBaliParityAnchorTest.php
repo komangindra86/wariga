@@ -32,7 +32,7 @@ class KalenderBaliParityAnchorTest extends TestCase
     {
         $this->seed(VerifiedQaCalendarMasterSeeder::class);
 
-        // Surat Ditjen Bimas Hindu B-253/DJ.VI/Dt.VI.I.3/BA.03/09/2025 (config wariga.hindu_observances).
+        // Surat Ditjen Bimas Hindu B-253/DJ.VI/Dt.VI.I.3/BA.03/09/2025.
         foreach ([
             '2026-04-04' => ['Saniscara', 'Umanis', 'Watugunung'],
             '2026-04-08' => ['Buda', 'Kliwon', 'Sinta'],
@@ -54,10 +54,9 @@ class KalenderBaliParityAnchorTest extends TestCase
         }
     }
 
-    public function test_sasih_rerainan_are_calculated_without_configured_dates(): void
+    public function test_sasih_rerainan_match_official_dates(): void
     {
         $this->seed(VerifiedQaCalendarMasterSeeder::class);
-        config(['wariga.holidays' => [], 'wariga.hindu_observances' => []]);
 
         // 2026: Surat Bimas Hindu B-253/2025. 2027-01-06: Siwa Ratri kalenderbali.org. 2023-2025: Nyepi resmi.
         foreach ([

@@ -9,9 +9,10 @@ purnama/tilem, rerainan). Aturan ala-ayuning dewasa tidak ikut diaudit di sini.
 | --- | --- | --- | --- |
 | Wuku + 10 wewaran | 108/108 tanggal cocok (2024–2032) | sama | Valid, berlaku tanpa batas tahun |
 | Penanggal/pangelong, purnama, tilem | 318/322 cocok (2024–2037) | 322/322 (2024–2037), 198/198 (2000–2007) | Valid |
-| Nama sasih | 34/108 cocok; meleset di luar Jul 2024–Mei 2027 | 322/322 (2024–2037) | Valid hanya 2024–2037 |
+| Nama sasih | 34/108 cocok; meleset di luar Jul 2024–Mei 2027 | 1064/1064 purnama-tilem (2003–2045) | Valid sejak 2003, tanpa batas atas |
 | Rerainan pawukon (Saraswati, Pagerwesi, dst.) | hanya muncul untuk 2026 (hardcode) | dihitung tiap 210 hari | Valid |
-| Rerainan sasih (Siwa Ratri, Tawur Kesanga, Nyepi, Ngembak Geni) | hanya muncul untuk 2026 (hardcode) | dihitung dari Tilem Kapitu/Kasanga; cocok dengan Nyepi 2023–2026 dan Siwa Ratri 2026–2027 | Valid sejauh nama sasih valid (2024–2037) |
+| Libur nasional (SKB 3 Menteri) | hanya 2026 (hardcode) | dihitung: 2026 sama persis dengan SKB; hari besar Islam 35/35 awal bulan resmi 2018–2026; Imlek 31/31 (2000–2030); Waisak 13/13 (2014–2026) | Valid; cuti bersama tidak dihitung |
+| Rerainan sasih (Siwa Ratri, Tawur Kesanga, Nyepi, Ngembak Geni) | hanya muncul untuk 2026 (hardcode) | dihitung dari Tilem Kapitu/Kasanga; cocok dengan Nyepi 2023–2026 dan Siwa Ratri 2026–2027 | Valid sejak 2003 |
 
 Pembanding: halaman harian `kalenderbali.org/index.php?bulan=&tanggal=&tahun=`
 (108 tanggal) dan `kalenderbali.org/purnamatilem.php?tahun=` (520 purnama/tilem,
@@ -53,9 +54,29 @@ Pengecekan titik acuan: 17-06-2026 = Buda Kliwon Dungulan (Galungan, i = 73) dan
 - Kalau pengunalatri menelan tilem + penanggal 1, hari itu tetap disebut **Tilem**
   (contoh: Tilem Kanem 28-12-2027).
 - **Sasih nampih (Mala)** mengulang nama sasih sebelumnya, mis. Sadha → Mala Sadha → Kasa.
-  Daftar dari kalenderbali.org: Mala Sadha 2024, Mala Jiyestha 2027, Mala Sadha 2030,
-  Mala Sadha 2032, Mala Jiyestha 2035. Di luar 2024–2037, nama sasih belum
-  memperhitungkan nampih, dan `catatan` pada hasil memberi tahu hal itu.
+  Penempatannya mengikuti siklus Meton 19 tahun (7 nampih per siklus). Dengan
+  k = (tahun − 2005) mod 19: k = 0, 6, 8, 14 → Mala Sadha; k = 3, 11, 17 → Mala Jiyestha.
+  Contoh: Mala Sadha 2005/2024/2043, Mala Jiyestha 2008/2027/2046. Aturan ini cocok
+  dengan seluruh purnama-tilem kalenderbali.org 2003–2045. Sebelum 2003 penempatan
+  nampih belum baku (mis. Nampih Katiga 2001), dan `catatan` pada hasil memberi tahu hal itu.
+
+### Libur nasional
+
+`NationalHolidayCalculator` menghitung libur SKB 3 Menteri tanpa daftar manual:
+
+- Tanggal tetap: Tahun Baru, Hari Buruh, Hari Lahir Pancasila, Proklamasi, Natal.
+- Paskah: komputus Gregorian (Meeus/Jones/Butcher); Wafat = Paskah − 2, Kenaikan = Paskah + 39.
+- Imlek: bulan baru pertama (waktu Beijing) antara 21 Januari dan 20 Februari.
+- Waisak: purnama yang saatnya (UT) jatuh 6 Mei – 4 Juni, tanggal WIB.
+- Hari besar Islam: hisab imkanur rukyat seperti taqwim Kemenag. Hilal dihitung saat
+  Matahari terbenam di Banda Aceh pada hari konjungsi; MABIMS baru (tinggi ≥ 3°,
+  elongasi ≥ 6,4°) sejak 2022, MABIMS lama (tinggi ≥ 2°, elongasi ≥ 3° atau umur ≥ 8 jam)
+  sebelumnya. Bila tidak terpenuhi, bulan digenapkan (istikmal).
+- Posisi Matahari dan Bulan: `App\Services\Astronomy\Ephemeris` (Meeus bab 25, 47, 49).
+- Nyepi ditandai libur nasional dari perhitungan sasih.
+
+Yang tidak bisa dihitung: cuti bersama, pergeseran libur oleh pemerintah, dan hasil
+sidang isbat yang berbeda dari hisab (jarang, mis. bila hilal tepat di batas kriteria).
 
 ### Rerainan pawukon
 
@@ -97,12 +118,12 @@ Pengecekan titik acuan: 17-06-2026 = Buda Kliwon Dungulan (Galungan, i = 73) dan
 
 1. Dataset lunar terverifikasi hanya berisi 25 baris (2026). Untuk tahun lain bisa
    dijalankan `php artisan wariga:sync-kalender-bali-lunar {tahun}`.
-2. Tabel nampih harus ditambah untuk tahun sebelum 2024 dan sesudah 2037.
+2. Nama sasih sebelum 2003 belum memperhitungkan nampih gaya lama.
 3. Ingkel, Watek, Lintang, Pararasan, Panca Suda, Pratiti, dan Eka Jala Resi
    (yang ditampilkan kalenderbali.org) belum dihitung engine.
-4. Daftar libur nasional (SKB 3 Menteri) masih hardcode untuk 2026 saja.
-   Rerainan sasih sudah dihitung: Siwa Ratri = sehari sebelum Tilem Kapitu,
-   Tawur Agung = Tilem Kasanga, Nyepi dan Ngembak Geni = 1 dan 2 hari sesudahnya.
+4. Libur nasional dihitung; cuti bersama dan keputusan isbat yang menyimpang dari
+   hisab tetap harus dicek ke SKB tahun berjalan. Deepavali tidak lagi ditampilkan
+   karena tanggal dari Bimas Hindu (07-11-2026) tidak mengikuti aturan yang bisa dihitung.
 
 ## Rujukan
 

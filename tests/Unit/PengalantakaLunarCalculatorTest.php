@@ -68,6 +68,26 @@ class PengalantakaLunarCalculatorTest extends TestCase
         $this->assertSame('kanem', $tilem->sasih['kode']);
     }
 
+    public function test_nampih_follows_nineteen_year_metonic_cycle(): void
+    {
+        $calculator = new PengalantakaLunarCalculator;
+
+        // Tilem sasih Mala menurut kalenderbali.org/purnamatilem.php, di luar tabel lama 2024-2037.
+        foreach ([
+            '2005-07-06' => 'sadha', '2008-06-03' => 'jiyestha', '2013-07-07' => 'sadha',
+            '2019-07-02' => 'sadha', '2022-05-30' => 'jiyestha', '2038-07-02' => 'sadha',
+            '2041-05-30' => 'jiyestha', '2043-07-07' => 'sadha',
+        ] as $date => $sasih) {
+            $result = $calculator->calculate($date);
+            $this->assertTrue($result->isTilem, $date);
+            $this->assertTrue($result->isNampihSasih, $date);
+            $this->assertSame($sasih, $result->sasih['kode'], $date);
+        }
+
+        // Tahun tanpa nampih tetap berurutan: Tilem Kasa 2040 bukan Mala.
+        $this->assertFalse($calculator->calculate('2040-07-09')->isNampihSasih);
+    }
+
     public function test_calculates_dates_outside_verified_dataset(): void
     {
         $result = (new PengalantakaLunarCalculator)->calculate('2027-01-01');

@@ -8,7 +8,7 @@ final class VersionManager
     public function current(): array
     {
         return [
-            'engine_version' => (string) config('wariga.engine_version', '0.3.0'),
+            'engine_version' => (string) config('wariga.engine_version', '0.4.0'),
             'rule_version' => (string) config('wariga.rule_version', '1.0.0'),
             'dataset_version' => (string) config('wariga.dataset_version', '1.0.0'),
         ];

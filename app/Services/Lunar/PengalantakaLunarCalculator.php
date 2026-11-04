@@ -23,13 +23,23 @@ final class PengalantakaLunarCalculator
 
     private const PENGUNALATRI_INTERVAL = 63;
 
-    // Tilem penutup sasih nampih (Mala) menurut kalenderbali.org/purnamatilem.php.
+    // Sasih nampih (Mala) mengikuti siklus Meton 19 tahun: 7 nampih per siklus,
+    // diletakkan sesudah Jiyestha atau Sadha. Kunci = (tahun - 2005) mod 19.
+    // Cocok dengan kalenderbali.org/purnamatilem.php untuk 2003-2045.
     // Sasih nampih memakai nama sasih sebelumnya, mis. Sadha -> Mala Sadha -> Kasa.
-    private const NAMPIH_TILEM = ['2024-07-06', '2027-06-04', '2030-06-30', '2032-07-07', '2035-06-05'];
+    private const NAMPIH_CYCLE_BASE_YEAR = 2005;
 
-    private const NAMPIH_KNOWN_FROM = '2024-01-01';
+    private const NAMPIH_CYCLE = [0 => 'sadha', 3 => 'jiyestha', 6 => 'sadha', 8 => 'sadha', 11 => 'jiyestha', 14 => 'sadha', 17 => 'jiyestha'];
 
-    private const NAMPIH_KNOWN_UNTIL = '2037-12-31';
+    // Sebelum 2003 penempatan nampih belum baku (mis. Nampih Katiga 2001).
+    private const NAMPIH_RULE_FROM_YEAR = 2003;
+
+    private const MONTH_TABLE_PAST = 1500;
+
+    private const MONTH_TABLE_FUTURE = 1500;
+
+    /** @var array<int, array{sasih: int, nampih: bool}>|null */
+    private static ?array $months = null;
 
     private const SASIH = [
         ['kode' => 'kasa', 'nama' => 'Kasa'],
@@ -57,14 +67,9 @@ final class PengalantakaLunarCalculator
         $month = $this->floorDiv($absoluteSerial - 1, 30);
         $serial = PositiveModulo::positiveModulo($absoluteSerial - 1, 30) + 1;
 
-        $nampihMonths = array_map(
-            fn (string $tilem): int => $this->floorDiv($this->absoluteSerial(Carbon::parse($tilem)) - 1, 30),
-            self::NAMPIH_TILEM,
-        );
-        $nampihShift = count(array_filter($nampihMonths, fn (int $m): bool => $m > 0 && $m <= $month))
-            - count(array_filter($nampihMonths, fn (int $m): bool => $m > $month && $m <= 0));
-        $sasih = self::SASIH[PositiveModulo::positiveModulo(self::ANCHOR_SASIH_INDEX + $month - $nampihShift, 12)];
-        $nampihKnown = $target->betweenIncluded(self::NAMPIH_KNOWN_FROM, self::NAMPIH_KNOWN_UNTIL);
+        $info = self::monthTable()[$month] ?? null;
+        $sasih = self::SASIH[$info['sasih'] ?? PositiveModulo::positiveModulo(self::ANCHOR_SASIH_INDEX + $month, 12)];
+        $nampihKnown = $info !== null && $target->year >= self::NAMPIH_RULE_FROM_YEAR;
 
         return new LunarDateResult(
             available: true,
@@ -75,12 +80,12 @@ final class PengalantakaLunarCalculator
             nomorHari: $serial <= 15 ? $serial : $serial - 15,
             isPurnama: $serial === 15,
             isTilem: $serial === 30,
-            isNampihSasih: in_array($month, $nampihMonths, true),
+            isNampihSasih: $info['nampih'] ?? false,
             sumber: 'Rumus Pengalantaka internal',
-            referensi: 'Anchor KalenderBali.org 2 Februari 2026, siklus pengunalatri 63 hari, dan daftar sasih nampih 2024-2037',
+            referensi: 'Anchor KalenderBali.org 2 Februari 2026, siklus pengunalatri 63 hari, dan siklus nampih Meton 19 tahun',
             catatan: $nampihKnown
                 ? 'Hasil kalkulasi. Gunakan dataset terverifikasi sebagai keputusan final bila tersedia.'
-                : 'Hasil kalkulasi di luar 2024-2037: nama sasih belum memperhitungkan sasih nampih dan dapat bergeser. Fase bulan tetap dihitung.',
+                : 'Hasil kalkulasi sebelum 2003: penempatan sasih nampih saat itu belum baku sehingga nama sasih dapat bergeser. Fase bulan tetap dihitung.',
         );
     }
 
@@ -108,6 +113,58 @@ final class PengalantakaLunarCalculator
         $delta = (int) Carbon::parse(self::FIRST_PENGUNALATRI)->startOfDay()->diffInDays($date, false);
 
         return $this->floorDiv($delta, self::PENGUNALATRI_INTERVAL);
+    }
+
+    /**
+     * Nama sasih dan status nampih tiap sasih, berjalan maju dan mundur dari sasih anchor.
+     * Indeks 0 = sasih anchor; sasih m berisi tithi berjalan 30m+1 sampai 30m+30.
+     *
+     * @return array<int, array{sasih: int, nampih: bool}>
+     */
+    private static function monthTable(): array
+    {
+        if (self::$months !== null) {
+            return self::$months;
+        }
+        $months = [0 => ['sasih' => self::ANCHOR_SASIH_INDEX, 'nampih' => false]];
+
+        for ($m = 0; $m < self::MONTH_TABLE_FUTURE; $m++) {
+            $current = $months[$m];
+            $isLeapAfter = ! $current['nampih']
+                && self::nampihSasihOf(self::tilemYear($m)) === self::SASIH[$current['sasih']]['kode'];
+            $months[$m + 1] = $isLeapAfter
+                ? ['sasih' => $current['sasih'], 'nampih' => true]
+                : ['sasih' => ($current['sasih'] + 1) % 12, 'nampih' => false];
+        }
+        for ($m = 0; $m > -self::MONTH_TABLE_PAST; $m--) {
+            $current = $months[$m];
+            $previous = ($current['sasih'] + 11) % 12;
+            $months[$m - 1] = $current['nampih']
+                ? ['sasih' => $current['sasih'], 'nampih' => false]
+                : ['sasih' => $previous, 'nampih' => self::nampihSasihOf(self::tilemYear($m - 1)) === self::SASIH[$previous]['kode']];
+        }
+
+        return self::$months = $months;
+    }
+
+    private static function nampihSasihOf(int $year): ?string
+    {
+        if ($year < self::NAMPIH_RULE_FROM_YEAR) {
+            return null;
+        }
+
+        return self::NAMPIH_CYCLE[PositiveModulo::positiveModulo($year - self::NAMPIH_CYCLE_BASE_YEAR, 19)] ?? null;
+    }
+
+    /**
+     * Tahun Masehi (perkiraan) tilem penutup sasih m. Cukup untuk Jiyestha/Sadha
+     * yang selalu jatuh Mei-Juli, jauh dari pergantian tahun.
+     */
+    private static function tilemYear(int $month): int
+    {
+        $days = (int) round((30 * ($month + 1) - self::ANCHOR_SERIAL) * self::PENGUNALATRI_INTERVAL / (self::PENGUNALATRI_INTERVAL + 1));
+
+        return (int) gmdate('Y', strtotime(self::ANCHOR_DATE.' UTC') + $days * 86400);
     }
 
     private function floorDiv(int $value, int $divisor): int

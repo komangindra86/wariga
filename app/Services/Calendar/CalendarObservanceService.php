@@ -9,7 +9,7 @@ final class CalendarObservanceService
 {
     /**
      * Rerainan yang jatuh tetap tiap 210 hari: [sapta wara, panca wara, wuku, nama, tipe].
-     * Nama disamakan dengan config wariga.hindu_observances agar tidak dobel.
+     * Nama mengikuti surat edaran Ditjen Bimas Hindu.
      */
     private const PAWUKON_RERAINAN = [
         ['Wraspati', 'Wage', 'Sungsang', 'Sugihan Jawa', 'balinese_observance'],
@@ -31,7 +31,10 @@ final class CalendarObservanceService
         ['Buda', 'Kliwon', 'Sinta', 'Hari Raya Pagerwesi', 'hindu_holiday'],
     ];
 
-    public function __construct(private readonly LunarCalendarProviderInterface $lunar) {}
+    public function __construct(
+        private readonly LunarCalendarProviderInterface $lunar,
+        private readonly NationalHolidayCalculator $holidays,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $calendar
@@ -48,10 +51,11 @@ final class CalendarObservanceService
             }
         };
 
-        foreach (config("wariga.holidays.{$date}", []) as $name) {
+        foreach ($this->holidays->forDate($date) as $name) {
             $add($name, 'national_holiday');
         }
-        foreach (config("wariga.hindu_observances.{$date}", []) as $name) {
+
+        foreach ($this->sasihRerainan(Carbon::parse($date), $lunar) as $name) {
             $add($name, 'hindu_holiday');
         }
 
@@ -61,18 +65,6 @@ final class CalendarObservanceService
         $sapta = $wewaran['sapta_wara']['nama'] ?? null;
         $wuku = $calendar['wuku']['nama'] ?? null;
 
-        if ($tri === 'Kajeng' && $panca === 'Kliwon') {
-            $add('Kajeng Kliwon', 'balinese_observance');
-        }
-        if ($sapta === 'Buda' && $panca === 'Wage') {
-            $add('Buda Cemeng'.($wuku ? " {$wuku}" : ''), 'balinese_observance');
-        }
-        if ($sapta === 'Anggara' && $panca === 'Kliwon') {
-            $add('Anggara Kasih'.($wuku ? " {$wuku}" : ''), 'balinese_observance');
-        }
-        if ($sapta === 'Buda' && $panca === 'Kliwon') {
-            $add('Buda Kliwon'.($wuku ? " {$wuku}" : ''), 'balinese_observance');
-        }
         foreach (self::PAWUKON_RERAINAN as [$raSapta, $raPanca, $raWuku, $name, $type]) {
             if ($sapta === $raSapta && $panca === $raPanca && $wuku === $raWuku) {
                 $add($name, $type);
@@ -90,8 +82,17 @@ final class CalendarObservanceService
             $add($tumpek[$wuku], 'balinese_observance');
         }
 
-        foreach ($this->sasihRerainan(Carbon::parse($date), $lunar) as $name) {
-            $add($name, 'hindu_holiday');
+        if ($tri === 'Kajeng' && $panca === 'Kliwon') {
+            $add('Kajeng Kliwon', 'balinese_observance');
+        }
+        if ($sapta === 'Buda' && $panca === 'Wage') {
+            $add('Buda Cemeng'.($wuku ? " {$wuku}" : ''), 'balinese_observance');
+        }
+        if ($sapta === 'Anggara' && $panca === 'Kliwon') {
+            $add('Anggara Kasih'.($wuku ? " {$wuku}" : ''), 'balinese_observance');
+        }
+        if ($sapta === 'Buda' && $panca === 'Kliwon') {
+            $add('Buda Kliwon'.($wuku ? " {$wuku}" : ''), 'balinese_observance');
         }
 
         if (($lunar['is_purnama'] ?? false) === true) {
@@ -102,10 +103,12 @@ final class CalendarObservanceService
         }
 
         $types = array_column($observances, 'type');
+        // Nyepi selalu libur nasional, tetapi tetap ditampilkan sebagai hari raya Hindu.
+        $isNyepi = collect($observances)->contains(fn (array $event): bool => str_starts_with($event['name'], 'Hari Suci Nyepi'));
 
         return [
             'observances' => $observances,
-            'is_public_holiday' => in_array('national_holiday', $types, true),
+            'is_public_holiday' => $isNyepi || in_array('national_holiday', $types, true),
             'is_red_date' => count(array_intersect($types, ['national_holiday', 'hindu_holiday'])) > 0,
         ];
     }

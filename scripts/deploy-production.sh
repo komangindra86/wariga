@@ -8,7 +8,7 @@ set -euo pipefail
 
 APP=/var/www/wariga
 REPO=https://github.com/komangindra86/wariga.git
-ENGINE_VERSION=0.3.0
+ENGINE_VERSION=0.4.0
 CUR=$(readlink -f "$APP/current")
 TS=$(date +%Y%m%d%H%M%S)
 NEW=$APP/releases/$TS

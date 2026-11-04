@@ -1,6 +1,12 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+
+// Build release selalu memakai .env.production tanpa perlu mengatur ENVFILE.
+project.ext.envConfigFiles = [
+    debug: ".env.development",
+    release: ".env.production",
+]
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 /**
@@ -84,6 +90,12 @@ tasks.register('verifyReleaseConfiguration') {
             throw new GradleException('API_BASE_URL di .env.production harus berupa URL HTTPS produksi, bukan placeholder.')
         }
 
+        // Nilai yang benar-benar ditanam ke BuildConfig; kosong berarti aplikasi crash saat dibuka.
+        def embedded = project.env.get('API_BASE_URL')
+        if (embedded != env) {
+            throw new GradleException("API_BASE_URL yang ditanam ke aplikasi (${embedded ?: 'kosong'}) berbeda dengan .env.production. Hapus ENVFILE atau set ENVFILE=.env.production.")
+        }
+
         ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].each { propertyName ->
             if (!keystoreProperties.getProperty(propertyName)?.trim()) {
                 throw new GradleException("android/keystore.properties harus memuat ${propertyName} untuk build release.")
@@ -123,8 +135,8 @@ android {
         applicationId "com.balisantih.wariga"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.0.3"
+        versionCode 5
+        versionName "1.0.4"
     }
     signingConfigs {
         debug {

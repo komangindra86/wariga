@@ -64,8 +64,8 @@ Bundle yang berhasil berada di
 
 ## Pemeriksaan sebelum internal testing
 
-- Verifikasi application ID `com.balisantih.wariga`, version code `3`, dan
-  version name `1.0.2`.
+- Verifikasi application ID `com.balisantih.wariga`, version code `4`, dan
+  version name `1.0.3`.
 - Pastikan hanya permission `INTERNET` dan `POST_NOTIFICATIONS` termuat.
 - Instal APK/bundle hasil release dan uji startup, login, pencarian, detail,
   share, serta penghapusan akun.

@@ -6,6 +6,7 @@ use App\Contracts\LunarCalendarProviderInterface;
 use App\DTO\DewasaDateRecommendation;
 use App\DTO\DewasaSearchResult;
 use App\Services\Calendar\BaliCalendarService;
+use App\Services\Calendar\CalendarObservanceService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,8 @@ final class DewasaSearchService
         private readonly BaliCalendarService $calendarService,
         private readonly LunarCalendarProviderInterface $lunarProvider,
         private readonly AlaAyuMasterEvaluationService $alaAyuEvaluation,
+        private readonly CalendarObservanceService $observances,
+        private readonly DewasaExplanationService $explanations,
     ) {}
 
     public function search(
@@ -62,6 +65,7 @@ final class DewasaSearchService
         string|array|null $statusFilter,
     ): DewasaSearchResult {
         $all = [];
+        $activityName = (string) DB::table('wariga_activities')->where('id', $activityId)->value('nama');
         $cursor = $start->copy();
         $chunkSize = max(1, (int) config('wariga.search.chunk_size', 31));
 
@@ -69,7 +73,7 @@ final class DewasaSearchService
             $chunkEnd = $cursor->copy()->addDays($chunkSize - 1)->min($end);
 
             for ($date = $cursor->copy(); $date->lte($chunkEnd); $date->addDay()) {
-                $all[] = $this->evaluateDate($activityId, $date, $mode);
+                $all[] = $this->evaluateDate($activityId, $activityName, $date, $mode);
             }
 
             $cursor = $chunkEnd->copy()->addDay();
@@ -92,7 +96,7 @@ final class DewasaSearchService
         );
     }
 
-    private function evaluateDate(int $activityId, Carbon $date, string $mode): DewasaDateRecommendation
+    private function evaluateDate(int $activityId, string $activityName, Carbon $date, string $mode): DewasaDateRecommendation
     {
         $calendar = $this->calendarService->calculate($date);
         $lunar = $this->lunarProvider->getForDate($date);
@@ -102,6 +106,10 @@ final class DewasaSearchService
             $lunar->toArray(),
             $mode === 'expert',
         );
+        $rerainan = array_column(array_filter(
+            $this->observances->forDate($date->toDateString(), $calendar->toArray(), $lunar->toArray())['observances'],
+            fn (array $event): bool => in_array($event['type'], ['hindu_holiday', 'balinese_observance'], true),
+        ), 'name');
 
         return new DewasaDateRecommendation(
             date: $date->toDateString(),
@@ -111,6 +119,7 @@ final class DewasaSearchService
             positiveRuleCount: $result['positive_count'],
             prohibitionCount: $result['negative_count'],
             reasons: $result['reasons'],
+            explanation: $this->explanations->explain($activityName, $result, $rerainan),
             calendar: $calendar->toArray(),
             lunar: $lunar->toArray(),
         );
@@ -231,7 +240,7 @@ final class DewasaSearchService
             'activity' => $activityId,
             'start' => $start->toDateString(),
             'end' => $end->toDateString(),
-            'engine' => config('wariga.engine_version', '0.3.0'),
+            'engine' => config('wariga.engine_version', '0.4.0'),
             'ala_ayu_rules' => hash('sha256', json_encode($alaAyuVersion)),
             'validated_months' => hash('sha256', json_encode($validationVersion)),
             'mode' => $mode,

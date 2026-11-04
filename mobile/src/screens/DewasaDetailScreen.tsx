@@ -206,19 +206,22 @@ function DetailContent({
                     </View>
                 </AppCard>
 
+                {detail.explanation ? (
+                    <ExplanationCard explanation={detail.explanation} />
+                ) : null}
                 {/* Tanggal yang kurang baik: tampilkan dulu alasan untuk menghindarinya. */}
                 {detail.status === 'recommended' ? (
                     <>
                         <AppAccordion
-                            initiallyOpen
-                            title="Mengapa tanggal ini baik"
+                            initiallyOpen={!detail.explanation}
+                            title="Unsur baik yang cocok"
                         >
                             <ReasonList
                                 empty="Belum ada faktor pendukung yang cocok."
                                 reasons={grouped.recommendations}
                             />
                         </AppAccordion>
-                        <AppAccordion title="Hal yang perlu dipertimbangkan">
+                        <AppAccordion title="Unsur kurang baik yang cocok">
                             <ReasonList
                                 empty="Tidak ada pertimbangan khusus pada tanggal ini."
                                 reasons={grouped.considerations}
@@ -228,15 +231,15 @@ function DetailContent({
                 ) : (
                     <>
                         <AppAccordion
-                            initiallyOpen
-                            title="Mengapa sebaiknya dipertimbangkan atau dihindari"
+                            initiallyOpen={!detail.explanation}
+                            title="Unsur kurang baik yang cocok"
                         >
                             <ReasonList
                                 empty="Tidak ada pantangan khusus; nilainya rendah karena kurang faktor pendukung."
                                 reasons={grouped.considerations}
                             />
                         </AppAccordion>
-                        <AppAccordion title="Faktor pendukung">
+                        <AppAccordion title="Unsur baik yang cocok">
                             <ReasonList
                                 empty="Belum ada faktor pendukung yang cocok."
                                 reasons={grouped.recommendations}
@@ -244,6 +247,21 @@ function DetailContent({
                         </AppAccordion>
                     </>
                 )}
+                <AppAccordion title="Apa itu alahing dewasa?">
+                    <AppText variant="bodySmall">
+                        Dalam wariga, satu tanggal bisa punya unsur baik dan
+                        buruk sekaligus. Yang menentukan adalah unsur yang
+                        paling kuat. Urutannya dari yang paling kuat: sasih
+                        (bulan Bali), lalu penanggal/pangelong (hitungan hari
+                        dalam bulan Bali), lalu wuku (pekan Bali), lalu hari
+                        (wewaran).
+                    </AppText>
+                    <AppText color="textMuted" variant="bodySmall">
+                        Rerainan seperti Pagerwesi atau Purnama adalah hari suci
+                        untuk sembahyang, tetapi tidak otomatis menjadi hari
+                        baik untuk setiap kegiatan.
+                    </AppText>
+                </AppAccordion>
                 <AppAccordion title="Detail Kalender Bali">
                     <DetailRow
                         label="Sapta Wara"
@@ -410,6 +428,29 @@ function DetailContent({
     );
 }
 
+function ExplanationCard({
+    explanation,
+}: {
+    explanation: NonNullable<DewasaDetail['explanation']>;
+}) {
+    return (
+        <AppCard style={styles.explanationCard}>
+            <AppText color="textMuted" variant="caption">
+                Kenapa hasilnya begini?
+            </AppText>
+            <AppText weight="bold">{explanation.summary}</AppText>
+            {explanation.points.map(point => (
+                <View key={point} style={styles.point}>
+                    <AppText variant="bodySmall">•</AppText>
+                    <AppText style={styles.pointText} variant="bodySmall">
+                        {point}
+                    </AppText>
+                </View>
+            ))}
+        </AppCard>
+    );
+}
+
 function ReasonList({
     empty,
     reasons,
@@ -427,7 +468,13 @@ function ReasonList({
                     <AppText weight="semibold">{reason.rule_name}</AppText>
                     <AppText variant="bodySmall">{reason.reason}</AppText>
                     <AppText color="textMuted" variant="caption">
-                        {reason.score_effect >= 0
+                        {reason.alahing_label
+                            ? `${
+                                  reason.matched_composition
+                                      ? `${reason.matched_composition} · `
+                                      : ''
+                              }Kekuatan: ${reason.alahing_label}`
+                            : reason.score_effect >= 0
                             ? `Menambah nilai ${reason.score_effect}`
                             : `Mengurangi nilai ${Math.abs(
                                   reason.score_effect,
@@ -548,8 +595,11 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: spacing.sm,
     },
+    explanationCard: { gap: spacing.sm },
     feedbackForm: { gap: spacing.md },
     list: { gap: spacing.md },
+    point: { flexDirection: 'row', gap: spacing.sm },
+    pointText: { flex: 1 },
     reason: { gap: spacing.xs },
     row: { flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.xs },
     rowLabel: { flex: 1 },

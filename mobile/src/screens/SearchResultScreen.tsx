@@ -111,7 +111,7 @@ export function SearchResultScreen({ navigation, route }: Props) {
                         />
                         <AppText color="textMuted" variant="bodySmall">
                             Tanggal yang paling baik tampil paling atas. Ketuk
-                            sebuah tanggal untuk melihat alasannya.
+                            sebuah tanggal untuk melihat penjelasan lengkapnya.
                         </AppText>
                         <View style={styles.toolbar}>
                             <AppText color="textMuted" variant="bodySmall">
@@ -199,31 +199,21 @@ export function SearchResultScreen({ navigation, route }: Props) {
                                                     <View
                                                         style={styles.reasons}
                                                     >
-                                                        {item.main_reasons
-                                                            .slice(0, 3)
-                                                            .map(reason => (
-                                                                <AppText
-                                                                    key={
-                                                                        reason.rule_id
-                                                                    }
-                                                                    variant="bodySmall"
-                                                                >
-                                                                    •{' '}
-                                                                    {
-                                                                        reason.reason
-                                                                    }
-                                                                </AppText>
-                                                            ))}
-                                                        {item.main_reasons
-                                                            .length === 0 ? (
-                                                            <AppText
-                                                                color="textMuted"
-                                                                variant="bodySmall"
-                                                            >
-                                                                Belum ada alasan
-                                                                utama.
+                                                        {item.explanation ? (
+                                                            <AppText variant="bodySmall">
+                                                                {
+                                                                    item
+                                                                        .explanation
+                                                                        .summary
+                                                                }
                                                             </AppText>
-                                                        ) : null}
+                                                        ) : (
+                                                            <ReasonBullets
+                                                                reasons={
+                                                                    item.main_reasons
+                                                                }
+                                                            />
+                                                        )}
                                                     </View>
                                                 </AppCard>
                                             )}
@@ -328,6 +318,29 @@ function Summary({
                 </View>
             ))}
         </AppCard>
+    );
+}
+
+function ReasonBullets({
+    reasons,
+}: {
+    reasons: Array<{ reason: string; rule_id: number }>;
+}) {
+    if (!reasons.length) {
+        return (
+            <AppText color="textMuted" variant="bodySmall">
+                Belum ada alasan utama.
+            </AppText>
+        );
+    }
+    return (
+        <>
+            {reasons.slice(0, 3).map(reason => (
+                <AppText key={reason.rule_id} variant="bodySmall">
+                    • {reason.reason}
+                </AppText>
+            ))}
+        </>
     );
 }
 

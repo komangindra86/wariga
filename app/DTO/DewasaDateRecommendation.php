@@ -6,6 +6,7 @@ final readonly class DewasaDateRecommendation
 {
     /**
      * @param  array<int, array<string, mixed>>  $reasons
+     * @param  array{summary: string, points: list<string>}  $explanation
      * @param  array<string, mixed>  $calendar
      * @param  array<string, mixed>  $lunar
      */
@@ -17,6 +18,7 @@ final readonly class DewasaDateRecommendation
         public int $positiveRuleCount,
         public int $prohibitionCount,
         public array $reasons,
+        public array $explanation,
         public array $calendar,
         public array $lunar,
     ) {}
@@ -28,6 +30,7 @@ final readonly class DewasaDateRecommendation
             'score' => $this->score,
             'classification' => $this->classification,
             'status' => $this->status,
+            'explanation' => $this->explanation,
             'main_reasons' => $mode === 'simple' ? array_slice($this->reasons, 0, 3) : $this->reasons,
         ];
 

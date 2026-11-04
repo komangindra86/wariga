@@ -7,6 +7,14 @@ use Illuminate\Support\Facades\DB;
 
 final class AlaAyuMasterEvaluationService
 {
+    // Alahing dewasa: angka kecil mengalahkan angka besar.
+    public const LEVEL_LABELS = [
+        1 => 'sasih (bulan Bali)',
+        2 => 'penanggal/pangelong (hitungan hari dalam bulan Bali)',
+        3 => 'wuku (pekan Bali)',
+        4 => 'hari (wewaran)',
+    ];
+
     public function hasDefinitions(int $activityId): bool
     {
         return DB::table('ala_ayu_activity_rules')->where('activity_id', $activityId)->exists();
@@ -15,7 +23,8 @@ final class AlaAyuMasterEvaluationService
     /**
      * @return array{
      *   score: int, classification: string, status: string,
-     *   positive_count: int, negative_count: int, reasons: list<array<string, mixed>>
+     *   positive_count: int, negative_count: int, reasons: list<array<string, mixed>>,
+     *   validation: 'selected'|'not_selected'|null
      * }
      */
     public function evaluate(int $activityId, array $calendar, array $lunar, bool $expert): array
@@ -42,6 +51,8 @@ final class AlaAyuMasterEvaluationService
 
                 $priority = $this->priority($tokens, $context);
                 $effect = $rule->effect === 'positive' ? 1 : -1;
+                $composition = $alternative['raw'] ?? implode(' ', $tokens);
+                $description = trim((string) $rule->deskripsi);
                 $reason = [
                     'rule_id' => (int) $rule->id,
                     'rule_code' => 'KB-MASTER-'.(int) $rule->id,
@@ -50,11 +61,12 @@ final class AlaAyuMasterEvaluationService
                     'severity' => $rule->effect === 'positive' ? 'info' : 'high',
                     'matched' => true,
                     'score_effect' => $effect * (50 - ($priority * 10)),
-                    'reason' => $rule->effect === 'positive'
+                    'reason' => $description !== '' ? $description : ($rule->effect === 'positive'
                         ? "Unsur {$rule->nama} cocok pada tanggal ini dan mendukung kegiatan yang dipilih."
-                        : "Unsur {$rule->nama} cocok pada tanggal ini dan perlu dipertimbangkan untuk kegiatan yang dipilih.",
+                        : "Unsur {$rule->nama} cocok pada tanggal ini dan perlu dipertimbangkan untuk kegiatan yang dipilih."),
                     'alahing_priority' => $priority,
-                    'matched_composition' => $alternative['raw'] ?? implode(' ', $tokens),
+                    'alahing_label' => self::LEVEL_LABELS[$priority],
+                    'matched_composition' => $composition,
                 ];
                 if ($expert) {
                     $reason += [
@@ -73,6 +85,9 @@ final class AlaAyuMasterEvaluationService
                 break;
             }
         }
+        // Unsur paling kuat (alahing terkecil) tampil lebih dulu; bila setara, larangan dulu.
+        usort($matched, fn (array $a, array $b): int => [$a['alahing_priority'], $a['rule_type'] === 'positive']
+            <=> [$b['alahing_priority'], $b['rule_type'] === 'positive']);
 
         $positive = array_values(array_filter(
             $matched,
@@ -102,6 +117,7 @@ final class AlaAyuMasterEvaluationService
             'positive_count' => count($positive),
             'negative_count' => count($negative),
             'reasons' => $matched,
+            'validation' => null,
         ];
 
         return $this->applyValidatedSelection($activityId, $calendar, $result);
@@ -125,10 +141,12 @@ final class AlaAyuMasterEvaluationService
             $result['score'] = 50;
             $result['classification'] = 'Perlu Pertimbangan';
             $result['status'] = 'consideration';
+            $result['validation'] = 'not_selected';
         } elseif ($isSelected && $result['status'] !== 'recommended') {
             $result['score'] = 60;
             $result['classification'] = 'Cukup Baik';
             $result['status'] = 'recommended';
+            $result['validation'] = 'selected';
         }
 
         return $result;

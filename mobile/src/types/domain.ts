@@ -78,6 +78,9 @@ export interface RecommendationReason {
     matched: boolean;
     score_effect: number;
     reason: string;
+    alahing_priority?: number;
+    alahing_label?: string;
+    matched_composition?: string;
     attribute?: string;
     operator?: string;
     comparison_value?: unknown;
@@ -89,11 +92,18 @@ export interface RecommendationReason {
     rule_version?: string;
 }
 
+export interface DewasaExplanation {
+    summary: string;
+    points: string[];
+}
+
 export interface DewasaRecommendation {
     date: string;
     score: number;
     classification: string;
     status: 'recommended' | 'consideration' | 'avoid';
+    /** Penjelasan bahasa sederhana dari server; versi lama tidak mengirimnya. */
+    explanation?: DewasaExplanation;
     main_reasons: RecommendationReason[];
     calendar?: {
         tanggal_masehi: string;
